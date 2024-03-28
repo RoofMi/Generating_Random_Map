@@ -10,16 +10,6 @@ AChunk::AChunk()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComponent"));
-	SetRootComponent(MeshComponent);
-
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> DefaultMesh(TEXT("/Game/Geometry/Meshes/1M_Cube.1M_Cube"));
-
-	if (DefaultMesh.Succeeded())
-	{
-		MeshComponent->SetStaticMesh(DefaultMesh.Object);
-	}
-
 	chunkType = NONE;
 
 	down = false;
