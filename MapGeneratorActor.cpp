@@ -1370,7 +1370,7 @@ void AMapGeneratorActor::MakingDoor(AChunk* currentChunk, FHitResult upHitResult
 	}
 	if (leftHitResult.bBlockingHit)
 	{
-		if (rightHitResult.Actor->IsA<ACorrider>())
+		if (leftHitResult.Actor->IsA<ACorrider>())
 		{
 			Cast<ACorrider>(leftHitResult.Actor)->SetDoor(FString("right"), true);
 			currentChunk->SetDoor(FString("left"), true);
