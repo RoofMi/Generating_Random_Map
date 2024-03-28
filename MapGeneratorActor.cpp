@@ -548,16 +548,6 @@ AChunk* AMapGeneratorActor::GeneratingChunk(AChunk* CurrentChunk)
 	else if (upHitSuccess && rightHitSuccess && !downHitSuccess && !leftHitSuccess)
 	{
 		MakingDoor(CurrentChunk, upHitResult, rightHitResult, downHitResult, leftHitResult);
-		/*if (upHitResult.Actor->IsA<ACorrider>())
-		{
-			Cast<ACorrider>(upHitResult.Actor)->SetDoor(FString("down"), true);
-			CurrentChunk->SetDoor(FString("up"), true);
-		}
-		if (rightHitResult.Actor->IsA<ACorrider>())
-		{
-			Cast<ACorrider>(rightHitResult.Actor)->SetDoor(FString("left"), true);
-			CurrentChunk->SetDoor(FString("right"), true);
-		}*/
 
 		// 방을 스폰시킬지 결정
 		if (FMath::RandRange(0, 1) == 0)		// 방을 스폰
@@ -642,16 +632,6 @@ AChunk* AMapGeneratorActor::GeneratingChunk(AChunk* CurrentChunk)
 	else if (!upHitSuccess && rightHitSuccess && downHitSuccess && !leftHitSuccess)
 	{
 		MakingDoor(CurrentChunk, upHitResult, rightHitResult, downHitResult, leftHitResult);
-		/*if (rightHitResult.Actor->IsA<ACorrider>())
-		{
-			Cast<ACorrider>(rightHitResult.Actor)->SetDoor(FString("left"), true);
-			CurrentChunk->SetDoor(FString("right"), true);
-		}
-		if (downHitResult.Actor->IsA<ACorrider>())
-		{
-			Cast<ACorrider>(downHitResult.Actor)->SetDoor(FString("up"), true);
-			CurrentChunk->SetDoor(FString("down"), true);
-		}*/
 
 		// 방을 스폰시킬지 결정
 		if (FMath::RandRange(0, 1) == 0)		// 방을 스폰
@@ -736,16 +716,6 @@ AChunk* AMapGeneratorActor::GeneratingChunk(AChunk* CurrentChunk)
 	else if (!upHitSuccess && !rightHitSuccess && downHitSuccess && leftHitSuccess)
 	{
 		MakingDoor(CurrentChunk, upHitResult, rightHitResult, downHitResult, leftHitResult);
-		/*if (downHitResult.Actor->IsA<ACorrider>())
-		{
-			Cast<ACorrider>(downHitResult.Actor)->SetDoor(FString("up"), true);
-			CurrentChunk->SetDoor(FString("down"), true);
-		}
-		if (leftHitResult.Actor->IsA<ACorrider>())
-		{
-			Cast<ACorrider>(leftHitResult.Actor)->SetDoor(FString("right"), true);
-			CurrentChunk->SetDoor(FString("left"), true);
-		}*/
 
 		// 방을 스폰시킬지 결정
 		if (FMath::RandRange(0, 1) == 0)		// 방을 스폰
@@ -830,16 +800,6 @@ AChunk* AMapGeneratorActor::GeneratingChunk(AChunk* CurrentChunk)
 	else if (upHitSuccess && !rightHitSuccess && !downHitSuccess && leftHitSuccess)
 	{
 		MakingDoor(CurrentChunk, upHitResult, rightHitResult, downHitResult, leftHitResult);
-		/*if (leftHitResult.Actor->IsA<ACorrider>())
-		{
-			Cast<ACorrider>(leftHitResult.Actor)->SetDoor(FString("right"), true);
-			CurrentChunk->SetDoor(FString("left"), true);
-		}
-		if (upHitResult.Actor->IsA<ACorrider>())
-		{
-			Cast<ACorrider>(upHitResult.Actor)->SetDoor(FString("down"), true);
-			CurrentChunk->SetDoor(FString("up"), true);
-		}*/
 
 		// 방을 스폰시킬지 결정
 		if (FMath::RandRange(0, 1) == 0)		// 방을 스폰
@@ -925,16 +885,6 @@ AChunk* AMapGeneratorActor::GeneratingChunk(AChunk* CurrentChunk)
 	else if (upHitSuccess && !rightHitSuccess && downHitSuccess && !leftHitSuccess)
 	{
 		MakingDoor(CurrentChunk, upHitResult, rightHitResult, downHitResult, leftHitResult);
-		/*if (upHitResult.Actor->IsA<ACorrider>())
-		{
-			Cast<ACorrider>(upHitResult.Actor)->SetDoor(FString("down"), true);
-			CurrentChunk->SetDoor(FString("up"), true);
-		}
-		if (downHitResult.Actor->IsA<ACorrider>())
-		{
-			Cast<ACorrider>(downHitResult.Actor)->SetDoor(FString("up"), true);
-			CurrentChunk->SetDoor(FString("down"), true);
-		}*/
 
 		// 방을 스폰시킬지 결정
 		if (FMath::RandRange(0, 1) == 0)		// 방을 스폰
@@ -1019,16 +969,6 @@ AChunk* AMapGeneratorActor::GeneratingChunk(AChunk* CurrentChunk)
 	else if (upHitSuccess && !rightHitSuccess && !downHitSuccess && leftHitSuccess)
 	{
 		MakingDoor(CurrentChunk, upHitResult, rightHitResult, downHitResult, leftHitResult);
-		/*if (leftHitResult.Actor->IsA<ACorrider>())
-		{
-			Cast<ACorrider>(leftHitResult.Actor)->SetDoor(FString("right"), true);
-			CurrentChunk->SetDoor(FString("left"), true);
-		}
-		if (rightHitResult.Actor->IsA<ACorrider>())
-		{
-			Cast<ACorrider>(rightHitResult.Actor)->SetDoor(FString("left"), true);
-			CurrentChunk->SetDoor(FString("right"), true);
-		}*/
 
 		// 방을 스폰시킬지 결정
 		if (FMath::RandRange(0, 1) == 0)		// 방을 스폰
@@ -1113,21 +1053,6 @@ AChunk* AMapGeneratorActor::GeneratingChunk(AChunk* CurrentChunk)
 	else if (upHitSuccess && rightHitSuccess && downHitSuccess && !leftHitSuccess)
 	{
 		MakingDoor(CurrentChunk, upHitResult, rightHitResult, downHitResult, leftHitResult);
-		/*if (upHitResult.Actor->IsA<ACorrider>())
-		{
-			Cast<ACorrider>(upHitResult.Actor)->SetDoor(FString("down"), true);
-			CurrentChunk->SetDoor(FString("up"), true);
-		}
-		if (rightHitResult.Actor->IsA<ACorrider>())
-		{
-			Cast<ACorrider>(rightHitResult.Actor)->SetDoor(FString("left"), true);
-			CurrentChunk->SetDoor(FString("right"), true);
-		}
-		if (downHitResult.Actor->IsA<ACorrider>())
-		{
-			Cast<ACorrider>(downHitResult.Actor)->SetDoor(FString("up"), true);
-			CurrentChunk->SetDoor(FString("down"), true);
-		}*/
 
 		// 방을 스폰시킬지 결정
 		if (FMath::RandRange(0, 1) == 0)		// 방을 스폰
@@ -1169,21 +1094,6 @@ AChunk* AMapGeneratorActor::GeneratingChunk(AChunk* CurrentChunk)
 	else if (!upHitSuccess && rightHitSuccess && downHitSuccess && leftHitSuccess)
 	{
 		MakingDoor(CurrentChunk, upHitResult, rightHitResult, downHitResult, leftHitResult);
-		/*if (rightHitResult.Actor->IsA<ACorrider>())
-		{
-			Cast<ACorrider>(rightHitResult.Actor)->SetDoor(FString("left"), true);
-			CurrentChunk->SetDoor(FString("right"), true);
-		}
-		if (downHitResult.Actor->IsA<ACorrider>())
-		{
-			Cast<ACorrider>(downHitResult.Actor)->SetDoor(FString("up"), true);
-			CurrentChunk->SetDoor(FString("down"), true);
-		}
-		if (leftHitResult.Actor->IsA<ACorrider>())
-		{
-			Cast<ACorrider>(leftHitResult.Actor)->SetDoor(FString("right"), true);
-			CurrentChunk->SetDoor(FString("left"), true);
-		}*/
 
 		// 방을 스폰시킬지 결정
 		if (FMath::RandRange(0, 1) == 0)		// 방을 스폰
@@ -1225,21 +1135,6 @@ AChunk* AMapGeneratorActor::GeneratingChunk(AChunk* CurrentChunk)
 	else if (!upHitSuccess && rightHitSuccess && downHitSuccess && leftHitSuccess)
 	{
 		MakingDoor(CurrentChunk, upHitResult, rightHitResult, downHitResult, leftHitResult);
-		/*if (downHitResult.Actor->IsA<ACorrider>())
-		{
-			Cast<ACorrider>(downHitResult.Actor)->SetDoor(FString("up"), true);
-			CurrentChunk->SetDoor(FString("down"), true);
-		}
-		if (leftHitResult.Actor->IsA<ACorrider>())
-		{
-			Cast<ACorrider>(leftHitResult.Actor)->SetDoor(FString("right"), true);
-			CurrentChunk->SetDoor(FString("left"), true);
-		}
-		if (upHitResult.Actor->IsA<ACorrider>())
-		{
-			Cast<ACorrider>(upHitResult.Actor)->SetDoor(FString("down"), true);
-			CurrentChunk->SetDoor(FString("up"), true);
-		}*/
 
 		// 방을 스폰시킬지 결정
 		if (FMath::RandRange(0, 1) == 0)		// 방을 스폰
@@ -1281,21 +1176,6 @@ AChunk* AMapGeneratorActor::GeneratingChunk(AChunk* CurrentChunk)
 	else if (upHitSuccess && rightHitSuccess && !downHitSuccess && leftHitSuccess)
 	{
 		MakingDoor(CurrentChunk, upHitResult, rightHitResult, downHitResult, leftHitResult);
-		/*if (leftHitResult.Actor->IsA<ACorrider>())
-		{
-			Cast<ACorrider>(leftHitResult.Actor)->SetDoor(FString("right"), true);
-			CurrentChunk->SetDoor(FString("left"), true);
-		}
-		if (upHitResult.Actor->IsA<ACorrider>())
-		{
-			Cast<ACorrider>(upHitResult.Actor)->SetDoor(FString("down"), true);
-			CurrentChunk->SetDoor(FString("up"), true);
-		}
-		if (rightHitResult.Actor->IsA<ACorrider>())
-		{
-			Cast<ACorrider>(rightHitResult.Actor)->SetDoor(FString("left"), true);
-			CurrentChunk->SetDoor(FString("right"), true);
-		}*/
 
 		// 방을 스폰시킬지 결정
 		if (FMath::RandRange(0, 1) == 0)		// 방을 스폰
