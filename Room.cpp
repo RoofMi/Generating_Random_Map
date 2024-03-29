@@ -18,6 +18,13 @@ ARoom::ARoom()
 		MainMesh->SetStaticMesh(DefaultMesh.Object);
 	}
 
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> RoomMesh(TEXT("/Game/Geometry/Meshes/SM_Test_Room.SM_Test_Room"));
+
+	if (RoomMesh.Succeeded())
+	{
+		TypeMesh = RoomMesh.Object;
+	}
+
 	Mat_Green = CreateDefaultSubobject<UMaterial>(TEXT("MAIN Mat"));
 
 	static ConstructorHelpers::FObjectFinder<UMaterial> DefaultMat(TEXT("/Game/Geometry/Meshes/M_Green.M_Green"));
@@ -36,4 +43,18 @@ void ARoom::BeginPlay()
 	Super::BeginPlay();
 
 	MainMesh->SetMaterial(0, Mat_Green);
+}
+
+void ARoom::SpawnTypeActor()
+{
+	Super::SpawnTypeActor();
+
+	if (right)
+		SetActorRotation(FRotator(0.0f, 90.0f, 0.0f));
+	else if (down)
+		SetActorRotation(FRotator(0.0f, 180.0f, 0.0f));
+	else if (left)
+		SetActorRotation(FRotator(0.0f, -90.0f, 0.0f));
+	
+	MainMesh->SetStaticMesh(TypeMesh);
 }

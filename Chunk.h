@@ -40,6 +40,7 @@ public:
 	UPROPERTY(VisibleAnywhere, Category = "RoomSetting")
 	bool left;
 
+	virtual void SpawnTypeActor();
 	
 
 protected:
@@ -48,6 +49,8 @@ protected:
 	};
 
 	int8 chunkType;
+
+	UStaticMesh* TypeMesh;
 
 private:
 	UPROPERTY(EditAnywhere, Category = "Components")

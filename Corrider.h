@@ -18,6 +18,8 @@ public:
 	// Sets default values for this actor's properties
 	ACorrider();
 
+	virtual void SpawnTypeActor() override;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -25,6 +27,12 @@ protected:
 private:
 	UPROPERTY(EditAnywhere, Category = "Components")
 	UStaticMeshComponent* MainMesh;
+
+	UStaticMesh* Corrider_1Way;
+	UStaticMesh* Corrider_2Way;
+	UStaticMesh* Corrider_Vertical_2Way;
+	UStaticMesh* Corrider_3Way;
+	UStaticMesh* Corrider_4Way;
 
 	UPROPERTY(EditAnywhere)
 	UMaterial* Mat_Silver;

@@ -16,6 +16,8 @@ AChunk::AChunk()
 	up = false;
 	left = false;
 	right = false;
+
+	Tags.Add(FName("way"));
 }
 
 // Called when the game starts or when spawned
@@ -67,4 +69,9 @@ void AChunk::SetDoor(FString direction, bool state)
 		left = state;
 	else if (direction == FString("right"))
 		right = state;
+}
+
+void AChunk::SpawnTypeActor()
+{
+	SetActorScale3D(FVector(1.0f, 1.0f, 1.0f));
 }

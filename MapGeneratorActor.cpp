@@ -5,6 +5,7 @@
 #include "MainRoom.h"
 #include "Room.h"
 #include "Corrider.h"
+#include "EngineUtils.h"
 
 // Sets default values
 AMapGeneratorActor::AMapGeneratorActor()
@@ -66,22 +67,30 @@ void AMapGeneratorActor::GeneratingMap()
 	}
 
 	//root 2
-	/*for (int i = 0; i < 10; i++)
+	for (int i = 0; i < 10; i++)
 	{
 		root_2 = GeneratingChunk(root_2);
 
 		if (root_2 == nullptr)
 			break;
-	}*/
+	}
 
 	//root 3
-	/*for (int i = 0; i < 10; i++)
+	for (int i = 0; i < 10; i++)
 	{
 		root_3 = GeneratingChunk(root_3);
 
 		if (root_3 == nullptr)
 			break;
-	}*/
+	}
+
+	for (TActorIterator<AChunk> Chunk(GetWorld()); Chunk; ++Chunk)
+	{
+		if (Chunk->ActorHasTag("way"))
+		{
+			Chunk->SpawnTypeActor();
+		}
+	}
 }
 
 AChunk* AMapGeneratorActor::SpawnRoom(FVector location, FString doorLocation)
@@ -1061,24 +1070,10 @@ AChunk* AMapGeneratorActor::GeneratingChunk(AChunk* CurrentChunk)
 			* 방을 스폰 시킨 뒤, 복도를 하나 더 만들지 말지를 결정.
 			* Door가 있는 부분도 함께 저장해준다.
 			*/
-			int8 roomLocation;
 
 			// LEFT
 			SpawnRoom(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y - 1000, CurrentChunk->GetActorLocation().Z), FString("right"));
-			roomLocation = 3;
 			CurrentChunk->SetDoor(FString("left"), true);
-
-			// 복도 잇기 or 방 한개로 끝
-			// if 안의 조건 FMath::RandRange(0, 1) == 0
-			if (true)
-			{
-				// LEFT
-				returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y - 1000, CurrentChunk->GetActorLocation().Z), FString("right"));
-				CurrentChunk->SetDoor(FString("left"), true);
-			}
-			else
-				return nullptr;
-
 		}
 		else									// 복도를 스폰
 		{
@@ -1102,24 +1097,10 @@ AChunk* AMapGeneratorActor::GeneratingChunk(AChunk* CurrentChunk)
 			* 방을 스폰 시킨 뒤, 복도를 하나 더 만들지 말지를 결정.
 			* Door가 있는 부분도 함께 저장해준다.
 			*/
-			int8 roomLocation;
 
 			// UP
 			SpawnRoom(FVector(CurrentChunk->GetActorLocation().X + 1000, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("down"));
-			roomLocation = 0;
 			CurrentChunk->SetDoor(FString("up"), true);
-
-			// 복도 잇기 or 방 한개로 끝
-			// if 안의 조건 FMath::RandRange(0, 1) == 0
-			if (true)
-			{
-				// UP
-				returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X + 1000, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("down"));
-				CurrentChunk->SetDoor(FString("up"), true);
-			}
-			else
-				return nullptr;
-
 		}
 		else									// 복도를 스폰
 		{
@@ -1143,24 +1124,10 @@ AChunk* AMapGeneratorActor::GeneratingChunk(AChunk* CurrentChunk)
 			* 방을 스폰 시킨 뒤, 복도를 하나 더 만들지 말지를 결정.
 			* Door가 있는 부분도 함께 저장해준다.
 			*/
-			int8 roomLocation;
-
+	
 			// RIGHT
 			SpawnRoom(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y + 1000, CurrentChunk->GetActorLocation().Z), FString("left"));
-			roomLocation = 1;
 			CurrentChunk->SetDoor(FString("right"), true);
-
-			// 복도 잇기 or 방 한개로 끝
-			// if 안의 조건 FMath::RandRange(0, 1) == 0
-			if (true)
-			{
-				// RIGHT
-				returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y + 1000, CurrentChunk->GetActorLocation().Z), FString("left"));
-				CurrentChunk->SetDoor(FString("right"), true);
-			}
-			else
-				return nullptr;
-
 		}
 		else									// 복도를 스폰
 		{
@@ -1184,24 +1151,10 @@ AChunk* AMapGeneratorActor::GeneratingChunk(AChunk* CurrentChunk)
 			* 방을 스폰 시킨 뒤, 복도를 하나 더 만들지 말지를 결정.
 			* Door가 있는 부분도 함께 저장해준다.
 			*/
-			int8 roomLocation;
 
 			// DOWN
 			SpawnRoom(FVector(CurrentChunk->GetActorLocation().X - 1000, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("up"));
-			roomLocation = 1;
 			CurrentChunk->SetDoor(FString("down"), true);
-
-			// 복도 잇기 or 방 한개로 끝
-			// if 안의 조건 FMath::RandRange(0, 1) == 0
-			if (true)
-			{
-				// DOWN
-				returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X - 1000, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("up"));
-				CurrentChunk->SetDoor(FString("down"), true);
-			}
-			else
-				return nullptr;
-
 		}
 		else									// 복도를 스폰
 		{
