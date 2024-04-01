@@ -17,6 +17,7 @@ AMapGeneratorActor::AMapGeneratorActor()
 	RootComponent = MeshComponent;
 
 	mapScale = 3;
+	ChunkDistance = 2000;
 }
 
 // Called when the game starts or when spawned
@@ -37,24 +38,20 @@ void AMapGeneratorActor::Tick(float DeltaTime)
 void AMapGeneratorActor::GeneratingMap()
 {
 	FActorSpawnParameters tParams;
-	//FVector root_1 = FVector(GetActorLocation().X, GetActorLocation().Y + 1000, GetActorLocation().Z);
-	//FVector root_2 = FVector(GetActorLocation().X - 1000, GetActorLocation().Y, GetActorLocation().Z);
-	//FVector root_3 = FVector(GetActorLocation().X, GetActorLocation().Y - 1000, GetActorLocation().Z);
 	
 	// 메인 룸 스폰
 	AMainRoom* Main = GetWorld()->SpawnActor<AMainRoom>(AMainRoom::StaticClass(), GetActorLocation(), FRotator::ZeroRotator, tParams);
 	
-	//ACorrider* upCorrider = GetWorld()->SpawnActor<ACorrider>(ACorrider::StaticClass(), FVector(GetActorLocation().X + ((i + 1) * 1000), GetActorLocation().Y, GetActorLocation().Z), FRotator::ZeroRotator, tParams);
-	ACorrider* rightCorrider = GetWorld()->SpawnActor<ACorrider>(ACorrider::StaticClass(), FVector(GetActorLocation().X, GetActorLocation().Y + 1000, GetActorLocation().Z), FRotator::ZeroRotator, tParams);
-	ACorrider* downCorrider = GetWorld()->SpawnActor<ACorrider>(ACorrider::StaticClass(), FVector(GetActorLocation().X - 1000, GetActorLocation().Y, GetActorLocation().Z), FRotator::ZeroRotator, tParams);
-	ACorrider* leftCorrider = GetWorld()->SpawnActor<ACorrider>(ACorrider::StaticClass(), FVector(GetActorLocation().X, GetActorLocation().Y - 1000, GetActorLocation().Z), FRotator::ZeroRotator, tParams);
+	ACorrider* upCorrider = GetWorld()->SpawnActor<ACorrider>(ACorrider::StaticClass(), FVector(GetActorLocation().X + ChunkDistance, GetActorLocation().Y, GetActorLocation().Z), FRotator::ZeroRotator, tParams);
+	ACorrider* rightCorrider = GetWorld()->SpawnActor<ACorrider>(ACorrider::StaticClass(), FVector(GetActorLocation().X, GetActorLocation().Y + (2 * ChunkDistance), GetActorLocation().Z), FRotator::ZeroRotator, tParams);
+	ACorrider* leftCorrider = GetWorld()->SpawnActor<ACorrider>(ACorrider::StaticClass(), FVector(GetActorLocation().X, GetActorLocation().Y - ChunkDistance, GetActorLocation().Z), FRotator::ZeroRotator, tParams);
 	
+	upCorrider->SetDoor(FString("down"), true);
 	rightCorrider->SetDoor(FString("left"), true);
-	downCorrider->SetDoor(FString("up"), true);
 	leftCorrider->SetDoor(FString("right"), true);
 
-	AChunk* root_1 = rightCorrider;
-	AChunk* root_2 = downCorrider;
+	AChunk* root_1 = upCorrider;
+	AChunk* root_2 = rightCorrider;
 	AChunk* root_3 = leftCorrider;
 
 	//root 1
@@ -130,7 +127,7 @@ AChunk* AMapGeneratorActor::GeneratingChunk(AChunk* CurrentChunk)
 	upHitSuccess = GetWorld()->LineTraceSingleByChannel(
 		upHitResult,
 		CurrentChunk->GetActorLocation(),
-		FVector(CurrentChunk->GetActorLocation().X + 1000, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z),
+		FVector(CurrentChunk->GetActorLocation().X + ChunkDistance, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z),
 		ECC_Visibility,
 		QueryParams
 	);
@@ -138,7 +135,7 @@ AChunk* AMapGeneratorActor::GeneratingChunk(AChunk* CurrentChunk)
 	rightHitSuccess = GetWorld()->LineTraceSingleByChannel(
 		rightHitResult,
 		CurrentChunk->GetActorLocation(),
-		FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y + 1000, CurrentChunk->GetActorLocation().Z),
+		FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y + ChunkDistance, CurrentChunk->GetActorLocation().Z),
 		ECC_Visibility,
 		QueryParams
 	);
@@ -146,7 +143,7 @@ AChunk* AMapGeneratorActor::GeneratingChunk(AChunk* CurrentChunk)
 	downHitSuccess = GetWorld()->LineTraceSingleByChannel(
 		downHitResult,
 		CurrentChunk->GetActorLocation(),
-		FVector(CurrentChunk->GetActorLocation().X - 1000, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z),
+		FVector(CurrentChunk->GetActorLocation().X - ChunkDistance, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z),
 		ECC_Visibility,
 		QueryParams
 	);
@@ -154,7 +151,7 @@ AChunk* AMapGeneratorActor::GeneratingChunk(AChunk* CurrentChunk)
 	leftHitSuccess = GetWorld()->LineTraceSingleByChannel(
 		leftHitResult,
 		CurrentChunk->GetActorLocation(),
-		FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y - 1000, CurrentChunk->GetActorLocation().Z),
+		FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y - ChunkDistance, CurrentChunk->GetActorLocation().Z),
 		ECC_Visibility,
 		QueryParams
 	);
@@ -177,19 +174,19 @@ AChunk* AMapGeneratorActor::GeneratingChunk(AChunk* CurrentChunk)
 			{
 				// RIGHT
 			case 0:
-				SpawnRoom(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y + 1000, CurrentChunk->GetActorLocation().Z), FString("left"));
+				SpawnRoom(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y + ChunkDistance, CurrentChunk->GetActorLocation().Z), FString("left"));
 				roomLocation = 1;
 				CurrentChunk->SetDoor(FString("right"), true);
 				break;
 				// DOWN
 			case 1:
-				SpawnRoom(FVector(CurrentChunk->GetActorLocation().X - 1000, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("up"));
+				SpawnRoom(FVector(CurrentChunk->GetActorLocation().X - ChunkDistance, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("up"));
 				roomLocation = 2;
 				CurrentChunk->SetDoor(FString("down"), true);
 				break;
 				// LEFT
 			case 2:
-				SpawnRoom(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y - 1000, CurrentChunk->GetActorLocation().Z), FString("right"));
+				SpawnRoom(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y - ChunkDistance, CurrentChunk->GetActorLocation().Z), FString("right"));
 				roomLocation = 3;
 				CurrentChunk->SetDoor(FString("left"), true);
 				break;
@@ -211,17 +208,17 @@ AChunk* AMapGeneratorActor::GeneratingChunk(AChunk* CurrentChunk)
 				{
 					// RIGHT
 				case 0:
-					returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y + 1000, CurrentChunk->GetActorLocation().Z), FString("left"));
+					returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y + ChunkDistance, CurrentChunk->GetActorLocation().Z), FString("left"));
 					CurrentChunk->SetDoor(FString("right"), true);
 					break;
 					// DOWN
 				case 1:
-					returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X - 1000, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("up"));
+					returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X - ChunkDistance, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("up"));
 					CurrentChunk->SetDoor(FString("down"), true);
 					break;
 					// LEFT
 				case 2:
-					returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y - 1000, CurrentChunk->GetActorLocation().Z), FString("right"));
+					returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y - ChunkDistance, CurrentChunk->GetActorLocation().Z), FString("right"));
 					CurrentChunk->SetDoor(FString("left"), true);
 					break;
 				default:
@@ -238,17 +235,17 @@ AChunk* AMapGeneratorActor::GeneratingChunk(AChunk* CurrentChunk)
 			{
 				// RIGHT
 			case 0:
-				returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y + 1000, CurrentChunk->GetActorLocation().Z), FString("left"));
+				returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y + ChunkDistance, CurrentChunk->GetActorLocation().Z), FString("left"));
 				CurrentChunk->SetDoor(FString("right"), true);
 				break;
 				// DOWN
 			case 1:
-				returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X - 1000, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("up"));
+				returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X - ChunkDistance, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("up"));
 				CurrentChunk->SetDoor(FString("down"), true);
 				break;
 				// LEFT
 			case 2:
-				returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y - 1000, CurrentChunk->GetActorLocation().Z), FString("right"));
+				returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y - ChunkDistance, CurrentChunk->GetActorLocation().Z), FString("right"));
 				CurrentChunk->SetDoor(FString("left"), true);
 				break;
 			default:
@@ -275,19 +272,19 @@ AChunk* AMapGeneratorActor::GeneratingChunk(AChunk* CurrentChunk)
 			{
 				// UP
 			case 0:
-				SpawnRoom(FVector(CurrentChunk->GetActorLocation().X + 1000, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("down"));
+				SpawnRoom(FVector(CurrentChunk->GetActorLocation().X + ChunkDistance, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("down"));
 				roomLocation = 0;
 				CurrentChunk->SetDoor(FString("up"), true);
 				break;
 				// DOWN
 			case 1:
-				SpawnRoom(FVector(CurrentChunk->GetActorLocation().X - 1000, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("up"));
+				SpawnRoom(FVector(CurrentChunk->GetActorLocation().X - ChunkDistance, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("up"));
 				roomLocation = 2;
 				CurrentChunk->SetDoor(FString("down"), true);
 				break;
 				// LEFT
 			case 2:
-				SpawnRoom(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y - 1000, CurrentChunk->GetActorLocation().Z), FString("right"));
+				SpawnRoom(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y - ChunkDistance, CurrentChunk->GetActorLocation().Z), FString("right"));
 				roomLocation = 3;
 				CurrentChunk->SetDoor(FString("left"), true);
 				break;
@@ -309,17 +306,17 @@ AChunk* AMapGeneratorActor::GeneratingChunk(AChunk* CurrentChunk)
 				{
 					// UP
 				case 0:
-					returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X + 1000, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("down"));
+					returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X + ChunkDistance, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("down"));
 					CurrentChunk->SetDoor(FString("up"), true);
 					break;
 					// DOWN
 				case 1:
-					returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X - 1000, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("up"));
+					returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X - ChunkDistance, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("up"));
 					CurrentChunk->SetDoor(FString("down"), true);
 					break;
 					// LEFT
 				case 2:
-					returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y - 1000, CurrentChunk->GetActorLocation().Z), FString("right"));
+					returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y - ChunkDistance, CurrentChunk->GetActorLocation().Z), FString("right"));
 					CurrentChunk->SetDoor(FString("left"), true);
 					break;
 				default:
@@ -336,17 +333,17 @@ AChunk* AMapGeneratorActor::GeneratingChunk(AChunk* CurrentChunk)
 			{
 				// UP
 			case 0:
-				returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X + 1000, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("down"));
+				returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X + ChunkDistance, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("down"));
 				CurrentChunk->SetDoor(FString("up"), true);
 				break;
 				// DOWN
 			case 1:
-				returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X - 1000, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("up"));
+				returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X - ChunkDistance, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("up"));
 				CurrentChunk->SetDoor(FString("down"), true);
 				break;
 				// LEFT
 			case 2:
-				returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y - 1000, CurrentChunk->GetActorLocation().Z), FString("right"));
+				returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y - ChunkDistance, CurrentChunk->GetActorLocation().Z), FString("right"));
 				CurrentChunk->SetDoor(FString("left"), true);
 				break;
 			default:
@@ -373,19 +370,19 @@ AChunk* AMapGeneratorActor::GeneratingChunk(AChunk* CurrentChunk)
 			{
 				// UP
 			case 0:
-				SpawnRoom(FVector(CurrentChunk->GetActorLocation().X + 1000, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("down"));
+				SpawnRoom(FVector(CurrentChunk->GetActorLocation().X + ChunkDistance, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("down"));
 				roomLocation = 0;
 				CurrentChunk->SetDoor(FString("up"), true);
 				break;
 				// RIGHT
 			case 1:
-				SpawnRoom(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y + 1000, CurrentChunk->GetActorLocation().Z), FString("left"));
+				SpawnRoom(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y + ChunkDistance, CurrentChunk->GetActorLocation().Z), FString("left"));
 				roomLocation = 1;
 				CurrentChunk->SetDoor(FString("right"), true);
 				break;
 				// LEFT
 			case 2:
-				SpawnRoom(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y - 1000, CurrentChunk->GetActorLocation().Z), FString("right"));
+				SpawnRoom(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y - ChunkDistance, CurrentChunk->GetActorLocation().Z), FString("right"));
 				roomLocation = 3;
 				CurrentChunk->SetDoor(FString("left"), true);
 				break;
@@ -407,17 +404,17 @@ AChunk* AMapGeneratorActor::GeneratingChunk(AChunk* CurrentChunk)
 				{
 					// UP
 				case 0:
-					returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X + 1000, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("down"));
+					returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X + ChunkDistance, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("down"));
 					CurrentChunk->SetDoor(FString("up"), true);
 					break;
 					// RIGHT
 				case 1:
-					returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y + 1000, CurrentChunk->GetActorLocation().Z), FString("left"));
+					returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y + ChunkDistance, CurrentChunk->GetActorLocation().Z), FString("left"));
 					CurrentChunk->SetDoor(FString("right"), true);
 					break;
 					// LEFT
 				case 2:
-					returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y - 1000, CurrentChunk->GetActorLocation().Z), FString("right"));
+					returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y - ChunkDistance, CurrentChunk->GetActorLocation().Z), FString("right"));
 					CurrentChunk->SetDoor(FString("left"), true);
 					break;
 				default:
@@ -434,17 +431,17 @@ AChunk* AMapGeneratorActor::GeneratingChunk(AChunk* CurrentChunk)
 			{
 				// UP
 			case 0:
-				returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X + 1000, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("down"));
+				returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X + ChunkDistance, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("down"));
 				CurrentChunk->SetDoor(FString("up"), true);
 				break;
 				// RIGHT
 			case 1:
-				returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y + 1000, CurrentChunk->GetActorLocation().Z), FString("left"));
+				returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y + ChunkDistance, CurrentChunk->GetActorLocation().Z), FString("left"));
 				CurrentChunk->SetDoor(FString("right"), true);
 				break;
 				// LEFT
 			case 2:
-				returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y - 1000, CurrentChunk->GetActorLocation().Z), FString("right"));
+				returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y - ChunkDistance, CurrentChunk->GetActorLocation().Z), FString("right"));
 				CurrentChunk->SetDoor(FString("left"), true);
 				break;
 			default:
@@ -471,19 +468,19 @@ AChunk* AMapGeneratorActor::GeneratingChunk(AChunk* CurrentChunk)
 			{
 				// UP
 			case 0:
-				SpawnRoom(FVector(CurrentChunk->GetActorLocation().X + 1000, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("down"));
+				SpawnRoom(FVector(CurrentChunk->GetActorLocation().X + ChunkDistance, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("down"));
 				roomLocation = 0;
 				CurrentChunk->SetDoor(FString("up"), true);
 				break;
 				// RIGHT
 			case 1:
-				SpawnRoom(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y + 1000, CurrentChunk->GetActorLocation().Z), FString("left"));
+				SpawnRoom(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y + ChunkDistance, CurrentChunk->GetActorLocation().Z), FString("left"));
 				roomLocation = 1;
 				CurrentChunk->SetDoor(FString("right"), true);
 				break;
 				// DOWN
 			case 2:
-				SpawnRoom(FVector(CurrentChunk->GetActorLocation().X - 1000, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("up"));
+				SpawnRoom(FVector(CurrentChunk->GetActorLocation().X - ChunkDistance, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("up"));
 				roomLocation = 2;
 				CurrentChunk->SetDoor(FString("down"), true);
 				break;
@@ -505,17 +502,17 @@ AChunk* AMapGeneratorActor::GeneratingChunk(AChunk* CurrentChunk)
 				{
 					// UP
 				case 0:
-					returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X + 1000, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("down"));
+					returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X + ChunkDistance, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("down"));
 					CurrentChunk->SetDoor(FString("up"), true);
 					break;
 					// RIGHT
 				case 1:
-					returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y + 1000, CurrentChunk->GetActorLocation().Z), FString("left"));
+					returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y + ChunkDistance, CurrentChunk->GetActorLocation().Z), FString("left"));
 					CurrentChunk->SetDoor(FString("right"), true);
 					break;
 					// DOWN
 				case 2:
-					returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X - 1000, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("up"));
+					returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X - ChunkDistance, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("up"));
 					CurrentChunk->SetDoor(FString("down"), true);
 					break;
 				default:
@@ -532,17 +529,17 @@ AChunk* AMapGeneratorActor::GeneratingChunk(AChunk* CurrentChunk)
 			{
 				// UP
 			case 0:
-				returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X + 1000, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("down"));
+				returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X + ChunkDistance, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("down"));
 				CurrentChunk->SetDoor(FString("up"), true);
 				break;
 				// RIGHT
 			case 1:
-				returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y + 1000, CurrentChunk->GetActorLocation().Z), FString("left"));
+				returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y + ChunkDistance, CurrentChunk->GetActorLocation().Z), FString("left"));
 				CurrentChunk->SetDoor(FString("right"), true);
 				break;
 				// DOWN
 			case 2:
-				returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X - 1000, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("up"));
+				returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X - ChunkDistance, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("up"));
 				CurrentChunk->SetDoor(FString("down"), true);
 				break;
 			default:
@@ -571,13 +568,13 @@ AChunk* AMapGeneratorActor::GeneratingChunk(AChunk* CurrentChunk)
 			{
 				// DOWN
 			case 0:
-				SpawnRoom(FVector(CurrentChunk->GetActorLocation().X - 1000, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("up"));
+				SpawnRoom(FVector(CurrentChunk->GetActorLocation().X - ChunkDistance, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("up"));
 				roomLocation = 2;
 				CurrentChunk->SetDoor(FString("down"), true);
 				break;
 				// LEFT
 			case 1:
-				SpawnRoom(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y - 1000, CurrentChunk->GetActorLocation().Z), FString("right"));
+				SpawnRoom(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y - ChunkDistance, CurrentChunk->GetActorLocation().Z), FString("right"));
 				roomLocation = 3;
 				CurrentChunk->SetDoor(FString("left"), true);
 				break;
@@ -599,12 +596,12 @@ AChunk* AMapGeneratorActor::GeneratingChunk(AChunk* CurrentChunk)
 				{
 					// DOWN
 				case 0:
-					returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X - 1000, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("up"));
+					returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X - ChunkDistance, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("up"));
 					CurrentChunk->SetDoor(FString("down"), true);
 					break;
 					// LEFT
 				case 1:
-					returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y - 1000, CurrentChunk->GetActorLocation().Z), FString("right"));
+					returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y - ChunkDistance, CurrentChunk->GetActorLocation().Z), FString("right"));
 					CurrentChunk->SetDoor(FString("left"), true);
 					break;
 				default:
@@ -621,12 +618,12 @@ AChunk* AMapGeneratorActor::GeneratingChunk(AChunk* CurrentChunk)
 			{
 				// DOWN
 			case 0:
-				returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X - 1000, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("up"));
+				returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X - ChunkDistance, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("up"));
 				CurrentChunk->SetDoor(FString("down"), true);
 				break;
 				// LEFT
 			case 1:
-				returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y - 1000, CurrentChunk->GetActorLocation().Z), FString("right"));
+				returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y - ChunkDistance, CurrentChunk->GetActorLocation().Z), FString("right"));
 				CurrentChunk->SetDoor(FString("left"), true);
 				break;
 			default:
@@ -655,13 +652,13 @@ AChunk* AMapGeneratorActor::GeneratingChunk(AChunk* CurrentChunk)
 			{
 				// UP
 			case 0:
-				SpawnRoom(FVector(CurrentChunk->GetActorLocation().X + 1000, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("down"));
+				SpawnRoom(FVector(CurrentChunk->GetActorLocation().X + ChunkDistance, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("down"));
 				roomLocation = 0;
 				CurrentChunk->SetDoor(FString("up"), true);
 				break;
 				// LEFT
 			case 1:
-				SpawnRoom(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y - 1000, CurrentChunk->GetActorLocation().Z), FString("right"));
+				SpawnRoom(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y - ChunkDistance, CurrentChunk->GetActorLocation().Z), FString("right"));
 				roomLocation = 3;
 				CurrentChunk->SetDoor(FString("left"), true);
 				break;
@@ -683,12 +680,12 @@ AChunk* AMapGeneratorActor::GeneratingChunk(AChunk* CurrentChunk)
 				{
 					// UP
 				case 0:
-					returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X + 1000, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("down"));
+					returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X + ChunkDistance, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("down"));
 					CurrentChunk->SetDoor(FString("up"), true);
 					break;
 					// LEFT
 				case 1:
-					returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y - 1000, CurrentChunk->GetActorLocation().Z), FString("right"));
+					returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y - ChunkDistance, CurrentChunk->GetActorLocation().Z), FString("right"));
 					CurrentChunk->SetDoor(FString("left"), true);
 					break;
 				default:
@@ -705,12 +702,12 @@ AChunk* AMapGeneratorActor::GeneratingChunk(AChunk* CurrentChunk)
 			{
 				// UP
 			case 0:
-				returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X + 1000, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("down"));
+				returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X + ChunkDistance, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("down"));
 				CurrentChunk->SetDoor(FString("up"), true);
 				break;
 				// LEFT
 			case 1:
-				returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y - 1000, CurrentChunk->GetActorLocation().Z), FString("right"));
+				returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y - ChunkDistance, CurrentChunk->GetActorLocation().Z), FString("right"));
 				CurrentChunk->SetDoor(FString("left"), true);
 				break;
 			default:
@@ -739,13 +736,13 @@ AChunk* AMapGeneratorActor::GeneratingChunk(AChunk* CurrentChunk)
 			{
 				// UP
 			case 0:
-				SpawnRoom(FVector(CurrentChunk->GetActorLocation().X + 1000, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("down"));
+				SpawnRoom(FVector(CurrentChunk->GetActorLocation().X + ChunkDistance, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("down"));
 				roomLocation = 0;
 				CurrentChunk->SetDoor(FString("up"), true);
 				break;
 				// RIGHT
 			case 1:
-				SpawnRoom(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y + 1000, CurrentChunk->GetActorLocation().Z), FString("left"));
+				SpawnRoom(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y + ChunkDistance, CurrentChunk->GetActorLocation().Z), FString("left"));
 				roomLocation = 1;
 				CurrentChunk->SetDoor(FString("right"), true);
 				break;
@@ -767,12 +764,12 @@ AChunk* AMapGeneratorActor::GeneratingChunk(AChunk* CurrentChunk)
 				{
 					// UP
 				case 0:
-					returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X + 1000, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("down"));
+					returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X + ChunkDistance, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("down"));
 					CurrentChunk->SetDoor(FString("up"), true);
 					break;
 					// RIGHT
 				case 1:
-					returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y + 1000, CurrentChunk->GetActorLocation().Z), FString("left"));
+					returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y + ChunkDistance, CurrentChunk->GetActorLocation().Z), FString("left"));
 					CurrentChunk->SetDoor(FString("right"), true);
 					break;
 				default:
@@ -789,12 +786,12 @@ AChunk* AMapGeneratorActor::GeneratingChunk(AChunk* CurrentChunk)
 			{
 				// UP
 			case 0:
-				returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X + 1000, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("down"));
+				returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X + ChunkDistance, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("down"));
 				CurrentChunk->SetDoor(FString("up"), true);
 				break;
 				// RIGHT
 			case 1:
-				returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y + 1000, CurrentChunk->GetActorLocation().Z), FString("left"));
+				returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y + ChunkDistance, CurrentChunk->GetActorLocation().Z), FString("left"));
 				CurrentChunk->SetDoor(FString("right"), true);
 				break;
 			default:
@@ -824,13 +821,13 @@ AChunk* AMapGeneratorActor::GeneratingChunk(AChunk* CurrentChunk)
 				break;
 				// RIGHT
 			case 0:
-				SpawnRoom(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y + 1000, CurrentChunk->GetActorLocation().Z), FString("left"));
+				SpawnRoom(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y + ChunkDistance, CurrentChunk->GetActorLocation().Z), FString("left"));
 				roomLocation = 1;
 				CurrentChunk->SetDoor(FString("right"), true);
 				break;
 				// DOWN
 			case 1:
-				SpawnRoom(FVector(CurrentChunk->GetActorLocation().X - 1000, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("up"));
+				SpawnRoom(FVector(CurrentChunk->GetActorLocation().X - ChunkDistance, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("up"));
 				roomLocation = 2;
 				CurrentChunk->SetDoor(FString("down"), true);
 				break;
@@ -852,12 +849,12 @@ AChunk* AMapGeneratorActor::GeneratingChunk(AChunk* CurrentChunk)
 				{
 					// RIGHT
 				case 0:
-					returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y + 1000, CurrentChunk->GetActorLocation().Z), FString("left"));
+					returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y + ChunkDistance, CurrentChunk->GetActorLocation().Z), FString("left"));
 					CurrentChunk->SetDoor(FString("right"), true);
 					break;
 					// DOWN
 				case 1:
-					returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X - 1000, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("up"));
+					returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X - ChunkDistance, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("up"));
 					CurrentChunk->SetDoor(FString("down"), true);
 					break;
 				default:
@@ -874,12 +871,12 @@ AChunk* AMapGeneratorActor::GeneratingChunk(AChunk* CurrentChunk)
 			{
 				// RIGHT
 			case 0:
-				returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y + 1000, CurrentChunk->GetActorLocation().Z), FString("left"));
+				returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y + ChunkDistance, CurrentChunk->GetActorLocation().Z), FString("left"));
 				CurrentChunk->SetDoor(FString("right"), true);
 				break;
 				// DOWN
 			case 1:
-				returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X - 1000, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("up"));
+				returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X - ChunkDistance, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("up"));
 				CurrentChunk->SetDoor(FString("down"), true);
 				break;
 			default:
@@ -908,13 +905,13 @@ AChunk* AMapGeneratorActor::GeneratingChunk(AChunk* CurrentChunk)
 			{
 				// RIGHT
 			case 0:
-				SpawnRoom(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y + 1000, CurrentChunk->GetActorLocation().Z), FString("left"));
+				SpawnRoom(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y + ChunkDistance, CurrentChunk->GetActorLocation().Z), FString("left"));
 				roomLocation = 1;
 				CurrentChunk->SetDoor(FString("right"), true);
 				break;
 				// LEFT
 			case 1:
-				SpawnRoom(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y - 1000, CurrentChunk->GetActorLocation().Z), FString("right"));
+				SpawnRoom(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y - ChunkDistance, CurrentChunk->GetActorLocation().Z), FString("right"));
 				roomLocation = 3;
 				CurrentChunk->SetDoor(FString("left"), true);
 				break;
@@ -936,12 +933,12 @@ AChunk* AMapGeneratorActor::GeneratingChunk(AChunk* CurrentChunk)
 				{
 					// RIGHT
 				case 0:
-					returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y + 1000, CurrentChunk->GetActorLocation().Z), FString("left"));
+					returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y + ChunkDistance, CurrentChunk->GetActorLocation().Z), FString("left"));
 					CurrentChunk->SetDoor(FString("right"), true);
 					break;
 					// LEFT
 				case 1:
-					returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y - 1000, CurrentChunk->GetActorLocation().Z), FString("right"));
+					returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y - ChunkDistance, CurrentChunk->GetActorLocation().Z), FString("right"));
 					CurrentChunk->SetDoor(FString("left"), true);
 					break;
 				default:
@@ -958,12 +955,12 @@ AChunk* AMapGeneratorActor::GeneratingChunk(AChunk* CurrentChunk)
 			{
 				// RIGHT
 			case 0:
-				returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y + 1000, CurrentChunk->GetActorLocation().Z), FString("left"));
+				returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y + ChunkDistance, CurrentChunk->GetActorLocation().Z), FString("left"));
 				CurrentChunk->SetDoor(FString("right"), true);
 				break;
 				// LEFT
 			case 1:
-				returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y - 1000, CurrentChunk->GetActorLocation().Z), FString("right"));
+				returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y - ChunkDistance, CurrentChunk->GetActorLocation().Z), FString("right"));
 				CurrentChunk->SetDoor(FString("left"), true);
 				break;
 			default:
@@ -992,13 +989,13 @@ AChunk* AMapGeneratorActor::GeneratingChunk(AChunk* CurrentChunk)
 			{
 				// UP
 			case 0:
-				SpawnRoom(FVector(CurrentChunk->GetActorLocation().X + 1000, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("down"));
+				SpawnRoom(FVector(CurrentChunk->GetActorLocation().X + ChunkDistance, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("down"));
 				roomLocation = 0;
 				CurrentChunk->SetDoor(FString("up"), true);
 				break;
 				// DOWN
 			case 1:
-				SpawnRoom(FVector(CurrentChunk->GetActorLocation().X - 1000, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("up"));
+				SpawnRoom(FVector(CurrentChunk->GetActorLocation().X - ChunkDistance, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("up"));
 				roomLocation = 2;
 				CurrentChunk->SetDoor(FString("down"), true);
 				break;
@@ -1020,12 +1017,12 @@ AChunk* AMapGeneratorActor::GeneratingChunk(AChunk* CurrentChunk)
 				{
 					// UP
 				case 0:
-					returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X + 1000, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("down"));
+					returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X + ChunkDistance, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("down"));
 					CurrentChunk->SetDoor(FString("up"), true);
 					break;
 					// DOWN
 				case 1:
-					returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X - 1000, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("up"));
+					returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X - ChunkDistance, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("up"));
 					CurrentChunk->SetDoor(FString("down"), true);
 					break;
 				default:
@@ -1042,12 +1039,12 @@ AChunk* AMapGeneratorActor::GeneratingChunk(AChunk* CurrentChunk)
 			{
 				// UP
 			case 0:
-				returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X + 1000, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("down"));
+				returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X + ChunkDistance, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("down"));
 				CurrentChunk->SetDoor(FString("up"), true);
 				break;
 				// DOWN
 			case 1:
-				returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X - 1000, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("up"));
+				returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X - ChunkDistance, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("up"));
 				CurrentChunk->SetDoor(FString("down"), true);
 				break;
 			default:
@@ -1072,13 +1069,13 @@ AChunk* AMapGeneratorActor::GeneratingChunk(AChunk* CurrentChunk)
 			*/
 
 			// LEFT
-			SpawnRoom(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y - 1000, CurrentChunk->GetActorLocation().Z), FString("right"));
+			SpawnRoom(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y - ChunkDistance, CurrentChunk->GetActorLocation().Z), FString("right"));
 			CurrentChunk->SetDoor(FString("left"), true);
 		}
 		else									// 복도를 스폰
 		{
 			// LEFT
-			returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y - 1000, CurrentChunk->GetActorLocation().Z), FString("right"));
+			returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y - ChunkDistance, CurrentChunk->GetActorLocation().Z), FString("right"));
 			CurrentChunk->SetDoor(FString("left"), true);
 		}
 	}
@@ -1099,13 +1096,13 @@ AChunk* AMapGeneratorActor::GeneratingChunk(AChunk* CurrentChunk)
 			*/
 
 			// UP
-			SpawnRoom(FVector(CurrentChunk->GetActorLocation().X + 1000, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("down"));
+			SpawnRoom(FVector(CurrentChunk->GetActorLocation().X + ChunkDistance, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("down"));
 			CurrentChunk->SetDoor(FString("up"), true);
 		}
 		else									// 복도를 스폰
 		{
 			// UP
-			returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X + 1000, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("down"));
+			returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X + ChunkDistance, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("down"));
 			CurrentChunk->SetDoor(FString("up"), true);
 		}
 	}
@@ -1126,13 +1123,13 @@ AChunk* AMapGeneratorActor::GeneratingChunk(AChunk* CurrentChunk)
 			*/
 	
 			// RIGHT
-			SpawnRoom(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y + 1000, CurrentChunk->GetActorLocation().Z), FString("left"));
+			SpawnRoom(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y + ChunkDistance, CurrentChunk->GetActorLocation().Z), FString("left"));
 			CurrentChunk->SetDoor(FString("right"), true);
 		}
 		else									// 복도를 스폰
 		{
 			// RIGHT
-			returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y + 1000, CurrentChunk->GetActorLocation().Z), FString("left"));
+			returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y + ChunkDistance, CurrentChunk->GetActorLocation().Z), FString("left"));
 			CurrentChunk->SetDoor(FString("right"), true);
 		}
 	}
@@ -1153,13 +1150,13 @@ AChunk* AMapGeneratorActor::GeneratingChunk(AChunk* CurrentChunk)
 			*/
 
 			// DOWN
-			SpawnRoom(FVector(CurrentChunk->GetActorLocation().X - 1000, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("up"));
+			SpawnRoom(FVector(CurrentChunk->GetActorLocation().X - ChunkDistance, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("up"));
 			CurrentChunk->SetDoor(FString("down"), true);
 		}
 		else									// 복도를 스폰
 		{
 			// DOWN
-			returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X - 1000, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("up"));
+			returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X - ChunkDistance, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("up"));
 			CurrentChunk->SetDoor(FString("down"), true);
 		}
 	}

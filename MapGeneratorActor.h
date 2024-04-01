@@ -40,4 +40,10 @@ public:
 private:
 	UStaticMeshComponent* MeshComponent;
 
+	int32 ChunkDistance;
+	//FVector upVector;
+	//FVector rightVector;
+	//FVector downVector;
+	//FVector leftVector;
+
 };

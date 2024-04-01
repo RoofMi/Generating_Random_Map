@@ -18,27 +18,27 @@ AMainRoom::AMainRoom()
 		MainMesh->SetStaticMesh(DefaultMesh.Object);
 	}
 
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> MainRoomMesh(TEXT("/Game/Geometry/Meshes/SM_Test_MainRoom.SM_Test_MainRoom"));
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> MainRoomMesh(TEXT("/Game/Contents/Meshes/SM_MainRoom.SM_MainRoom"));
 
 	if (MainRoomMesh.Succeeded())
 	{
 		TypeMesh = MainRoomMesh.Object;
 	}
 
-	Mat_Orange = CreateDefaultSubobject<UMaterial>(TEXT("MAIN Mat"));
+	/*Mat_Orange = CreateDefaultSubobject<UMaterial>(TEXT("MAIN Mat"));
 
 	static ConstructorHelpers::FObjectFinder<UMaterial> DefaultMat(TEXT("/Game/Geometry/Meshes/M_Orange.M_Orange"));
 
 	if (DefaultMat.Succeeded())
 	{
 		Mat_Orange = DefaultMat.Object;
-	}
+	}*/
 	
 
 	chunkType = MAIN;
 
-	down = true;
-	up = false;
+	down = false;
+	up = true;
 	left = true;
 	right = true;
 }
@@ -47,13 +47,14 @@ void AMainRoom::BeginPlay()
 {
 	Super::BeginPlay();
 
-	MainMesh->SetMaterial(0, Mat_Orange);
+	SetActorScale3D(FVector(20.0f, 40.0f, 1.0f));
+	/*MainMesh->SetMaterial(0, Mat_Orange);*/
 }
 
 void AMainRoom::SpawnTypeActor()
 {
 	Super::SpawnTypeActor();
 	
-	SetActorRotation(FRotator(0.0f, 180.0f, 0.0f));
+	SetActorRotation(FRotator(0.0f, 90.0f, 0.0f));
 	MainMesh->SetStaticMesh(TypeMesh);
 }

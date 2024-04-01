@@ -25,7 +25,7 @@ void AChunk::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	SetActorScale3D(FVector(10.0f, 10.0f, 1.0f));
+	SetActorScale3D(FVector(20.0f, 20.0f, 1.0f));
 }
 
 // Called every frame

@@ -29,11 +29,12 @@ private:
 	UStaticMeshComponent* MainMesh;
 
 	UStaticMesh* Corrider_1Way;
-	UStaticMesh* Corrider_2Way;
+	UStaticMesh* Corrider_2Way_V1;
+	UStaticMesh* Corrider_2Way_V2;
 	UStaticMesh* Corrider_Vertical_2Way;
 	UStaticMesh* Corrider_3Way;
 	UStaticMesh* Corrider_4Way;
 
-	UPROPERTY(EditAnywhere)
-	UMaterial* Mat_Silver;
+	/*UPROPERTY(EditAnywhere)
+	UMaterial* Mat_Silver;*/
 };

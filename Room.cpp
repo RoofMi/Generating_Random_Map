@@ -18,21 +18,28 @@ ARoom::ARoom()
 		MainMesh->SetStaticMesh(DefaultMesh.Object);
 	}
 
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> RoomMesh(TEXT("/Game/Geometry/Meshes/SM_Test_Room.SM_Test_Room"));
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> Room_1(TEXT("/Game/Contents/Meshes/SM_Room1.SM_Room1"));
 
-	if (RoomMesh.Succeeded())
+	if (Room_1.Succeeded())
 	{
-		TypeMesh = RoomMesh.Object;
+		Room1 = Room_1.Object;
 	}
 
-	Mat_Green = CreateDefaultSubobject<UMaterial>(TEXT("MAIN Mat"));
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> Room_2(TEXT("/Game/Contents/Meshes/SM_Room2.SM_Room2"));
+
+	if (Room_2.Succeeded())
+	{
+		Room2 = Room_2.Object;
+	}
+
+	/*Mat_Green = CreateDefaultSubobject<UMaterial>(TEXT("MAIN Mat"));
 
 	static ConstructorHelpers::FObjectFinder<UMaterial> DefaultMat(TEXT("/Game/Geometry/Meshes/M_Green.M_Green"));
 
 	if (DefaultMat.Succeeded())
 	{
 		Mat_Green = DefaultMat.Object;
-	}
+	}*/
 
 
 	chunkType = ROOM;
@@ -42,19 +49,22 @@ void ARoom::BeginPlay()
 {
 	Super::BeginPlay();
 
-	MainMesh->SetMaterial(0, Mat_Green);
+	/*MainMesh->SetMaterial(0, Mat_Green);*/
 }
 
 void ARoom::SpawnTypeActor()
 {
 	Super::SpawnTypeActor();
 
-	if (right)
-		SetActorRotation(FRotator(0.0f, 90.0f, 0.0f));
-	else if (down)
-		SetActorRotation(FRotator(0.0f, 180.0f, 0.0f));
-	else if (left)
+	if (up)
 		SetActorRotation(FRotator(0.0f, -90.0f, 0.0f));
+	else if (down)
+		SetActorRotation(FRotator(0.0f, 90.0f, 0.0f));
+	else if (left)
+		SetActorRotation(FRotator(0.0f, 180.0f, 0.0f));
 	
-	MainMesh->SetStaticMesh(TypeMesh);
+	if (FMath::RandRange(0, 1) == 0)
+		MainMesh->SetStaticMesh(Room1);
+	else
+		MainMesh->SetStaticMesh(Room2);
 }

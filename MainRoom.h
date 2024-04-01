@@ -28,7 +28,7 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Components")
 	UStaticMeshComponent* MainMesh;
 
-	UPROPERTY(EditAnywhere)
-		UMaterial* Mat_Orange;
+	/*UPROPERTY(EditAnywhere)
+		UMaterial* Mat_Orange;*/
 
 };
