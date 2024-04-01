@@ -57,7 +57,7 @@ void AMapGeneratorActor::GeneratingMap()
 	//root 1
 	for (int i = 0; i < mapScale; i++)
 	{
-		root_1 = GeneratingChunk(root_1);
+		root_1 = GeneratingChunk(root_1, mapScale);
 
 		if (root_1 == nullptr)
 			break;
@@ -66,7 +66,7 @@ void AMapGeneratorActor::GeneratingMap()
 	//root 2
 	for (int i = 0; i < mapScale; i++)
 	{
-		root_2 = GeneratingChunk(root_2);
+		root_2 = GeneratingChunk(root_2, mapScale);
 
 		if (root_2 == nullptr)
 			break;
@@ -75,7 +75,7 @@ void AMapGeneratorActor::GeneratingMap()
 	//root 3
 	for (int i = 0; i < mapScale; i++)
 	{
-		root_3 = GeneratingChunk(root_3);
+		root_3 = GeneratingChunk(root_3, mapScale);
 
 		if (root_3 == nullptr)
 			break;
@@ -90,30 +90,13 @@ void AMapGeneratorActor::GeneratingMap()
 	}
 }
 
-AChunk* AMapGeneratorActor::SpawnRoom(FVector location, FString doorLocation)
-{
-	FActorSpawnParameters tParams;
-	ARoom* Room = GetWorld()->SpawnActor<ARoom>(ARoom::StaticClass(), location, FRotator::ZeroRotator, tParams);
-	Room->SetDoor(doorLocation, true);
-
-	return Room;
-}
-
-AChunk* AMapGeneratorActor::SpawnCorrider(FVector location, FString doorLocation)
-{
-	FActorSpawnParameters tParams;
-	ACorrider* Corrider = GetWorld()->SpawnActor<ACorrider>(ACorrider::StaticClass(), location, FRotator::ZeroRotator, tParams);
-	Corrider->SetDoor(doorLocation, true);
-
-	return Corrider;
-}
-
-AChunk* AMapGeneratorActor::GeneratingChunk(AChunk* CurrentChunk)
+AChunk* AMapGeneratorActor::GeneratingChunk(AChunk* CurrentChunk, int count)
 {
 	FCollisionQueryParams QueryParams;
 	QueryParams.AddIgnoredActor(CurrentChunk);
 
-	AChunk* returnActor = CurrentChunk;
+	AChunk* nextChunk = CurrentChunk;
+	TArray<bool> doorList;
 
 	bool upHitSuccess;
 	bool rightHitSuccess;
@@ -165,92 +148,17 @@ AChunk* AMapGeneratorActor::GeneratingChunk(AChunk* CurrentChunk)
 		if (FMath::RandRange(0, 1) == 0)		// 방을 스폰
 		{
 			/*
-			* 방을 스폰 시킨 뒤, 복도를 하나 더 만들지 말지를 결정.
+			* 방을 스폰 시킨 뒤, 복도를 하나 더 스폰.
 			* Door가 있는 부분도 함께 저장해준다.
 			*/
-			int8 roomLocation;
-
-			switch (FMath::RandRange(0, 2))
-			{
-				// RIGHT
-			case 0:
-				SpawnRoom(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y + ChunkDistance, CurrentChunk->GetActorLocation().Z), FString("left"));
-				roomLocation = 1;
-				CurrentChunk->SetDoor(FString("right"), true);
-				break;
-				// DOWN
-			case 1:
-				SpawnRoom(FVector(CurrentChunk->GetActorLocation().X - ChunkDistance, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("up"));
-				roomLocation = 2;
-				CurrentChunk->SetDoor(FString("down"), true);
-				break;
-				// LEFT
-			case 2:
-				SpawnRoom(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y - ChunkDistance, CurrentChunk->GetActorLocation().Z), FString("right"));
-				roomLocation = 3;
-				CurrentChunk->SetDoor(FString("left"), true);
-				break;
-			default:
-				break;
-			}
-
-			// 복도 잇기 or 방 한개로 끝
-			// if 안의 조건 FMath::RandRange(0, 1) == 0
-			if (true)
-			{
-				int8 checkCanGo = FMath::RandRange(0, 2);
-				TArray<int8> roomNumber = {1, 2, 3};
-
-				while (roomNumber[checkCanGo] == roomLocation)
-					checkCanGo = FMath::RandRange(0, 2);
-
-				switch (checkCanGo)
-				{
-					// RIGHT
-				case 0:
-					returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y + ChunkDistance, CurrentChunk->GetActorLocation().Z), FString("left"));
-					CurrentChunk->SetDoor(FString("right"), true);
-					break;
-					// DOWN
-				case 1:
-					returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X - ChunkDistance, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("up"));
-					CurrentChunk->SetDoor(FString("down"), true);
-					break;
-					// LEFT
-				case 2:
-					returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y - ChunkDistance, CurrentChunk->GetActorLocation().Z), FString("right"));
-					CurrentChunk->SetDoor(FString("left"), true);
-					break;
-				default:
-					break;
-				}
-			}
-			else
-				return nullptr;
-
+			doorList = { false, true, true, true };
+			doorList = SpawnRoom(CurrentChunk, doorList);
+			nextChunk = SpawnCorrider(CurrentChunk, doorList);
 		}
 		else									// 복도를 스폰
 		{
-			switch (FMath::RandRange(0, 2))
-			{
-				// RIGHT
-			case 0:
-				returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y + ChunkDistance, CurrentChunk->GetActorLocation().Z), FString("left"));
-				CurrentChunk->SetDoor(FString("right"), true);
-				break;
-				// DOWN
-			case 1:
-				returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X - ChunkDistance, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("up"));
-				CurrentChunk->SetDoor(FString("down"), true);
-				break;
-				// LEFT
-			case 2:
-				returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y - ChunkDistance, CurrentChunk->GetActorLocation().Z), FString("right"));
-				CurrentChunk->SetDoor(FString("left"), true);
-				break;
-			default:
-				break;
-			}
+			doorList = { false, true, true, true };
+			nextChunk = SpawnCorrider(CurrentChunk, doorList);
 		}
 	}
 
@@ -263,92 +171,17 @@ AChunk* AMapGeneratorActor::GeneratingChunk(AChunk* CurrentChunk)
 		if (FMath::RandRange(0, 1) == 0)		// 방을 스폰
 		{
 			/*
-			* 방을 스폰 시킨 뒤, 복도를 하나 더 만들지 말지를 결정.
+			* 방을 스폰 시킨 뒤, 복도를 하나 더 스폰.
 			* Door가 있는 부분도 함께 저장해준다.
 			*/
-			int8 roomLocation;
-
-			switch (FMath::RandRange(0, 2))
-			{
-				// UP
-			case 0:
-				SpawnRoom(FVector(CurrentChunk->GetActorLocation().X + ChunkDistance, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("down"));
-				roomLocation = 0;
-				CurrentChunk->SetDoor(FString("up"), true);
-				break;
-				// DOWN
-			case 1:
-				SpawnRoom(FVector(CurrentChunk->GetActorLocation().X - ChunkDistance, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("up"));
-				roomLocation = 2;
-				CurrentChunk->SetDoor(FString("down"), true);
-				break;
-				// LEFT
-			case 2:
-				SpawnRoom(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y - ChunkDistance, CurrentChunk->GetActorLocation().Z), FString("right"));
-				roomLocation = 3;
-				CurrentChunk->SetDoor(FString("left"), true);
-				break;
-			default:
-				break;
-			}
-
-			// 복도 잇기 or 방 한개로 끝
-			// if 안의 조건 FMath::RandRange(0, 1) == 0
-			if (true)
-			{
-				int8 checkCanGo = FMath::RandRange(0, 2);
-				TArray<int8> roomNumber = { 0, 2, 3 };
-
-				while (roomNumber[checkCanGo] == roomLocation)
-					checkCanGo = FMath::RandRange(0, 2);
-
-				switch (checkCanGo)
-				{
-					// UP
-				case 0:
-					returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X + ChunkDistance, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("down"));
-					CurrentChunk->SetDoor(FString("up"), true);
-					break;
-					// DOWN
-				case 1:
-					returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X - ChunkDistance, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("up"));
-					CurrentChunk->SetDoor(FString("down"), true);
-					break;
-					// LEFT
-				case 2:
-					returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y - ChunkDistance, CurrentChunk->GetActorLocation().Z), FString("right"));
-					CurrentChunk->SetDoor(FString("left"), true);
-					break;
-				default:
-					break;
-				}
-			}
-			else
-				return nullptr;
-
+			doorList = { true, false, true, true };
+			doorList = SpawnRoom(CurrentChunk, doorList);
+			nextChunk = SpawnCorrider(CurrentChunk, doorList);
 		}
 		else									// 복도를 스폰
 		{
-			switch (FMath::RandRange(0, 2))
-			{
-				// UP
-			case 0:
-				returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X + ChunkDistance, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("down"));
-				CurrentChunk->SetDoor(FString("up"), true);
-				break;
-				// DOWN
-			case 1:
-				returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X - ChunkDistance, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("up"));
-				CurrentChunk->SetDoor(FString("down"), true);
-				break;
-				// LEFT
-			case 2:
-				returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y - ChunkDistance, CurrentChunk->GetActorLocation().Z), FString("right"));
-				CurrentChunk->SetDoor(FString("left"), true);
-				break;
-			default:
-				break;
-			}
+			doorList = { true, false, true, true };
+			nextChunk = SpawnCorrider(CurrentChunk, doorList);
 		}
 	}
 
@@ -361,92 +194,17 @@ AChunk* AMapGeneratorActor::GeneratingChunk(AChunk* CurrentChunk)
 		if (FMath::RandRange(0, 1) == 0)		// 방을 스폰
 		{
 			/*
-			* 방을 스폰 시킨 뒤, 복도를 하나 더 만들지 말지를 결정.
+			* 방을 스폰 시킨 뒤, 복도를 하나 더 스폰.
 			* Door가 있는 부분도 함께 저장해준다.
 			*/
-			int8 roomLocation;
-
-			switch (FMath::RandRange(0, 2))
-			{
-				// UP
-			case 0:
-				SpawnRoom(FVector(CurrentChunk->GetActorLocation().X + ChunkDistance, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("down"));
-				roomLocation = 0;
-				CurrentChunk->SetDoor(FString("up"), true);
-				break;
-				// RIGHT
-			case 1:
-				SpawnRoom(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y + ChunkDistance, CurrentChunk->GetActorLocation().Z), FString("left"));
-				roomLocation = 1;
-				CurrentChunk->SetDoor(FString("right"), true);
-				break;
-				// LEFT
-			case 2:
-				SpawnRoom(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y - ChunkDistance, CurrentChunk->GetActorLocation().Z), FString("right"));
-				roomLocation = 3;
-				CurrentChunk->SetDoor(FString("left"), true);
-				break;
-			default:
-				break;
-			}
-
-			// 복도 잇기 or 방 한개로 끝
-			// if 안의 조건 FMath::RandRange(0, 1) == 0
-			if (true)
-			{
-				int8 checkCanGo = FMath::RandRange(0, 2);
-				TArray<int8> roomNumber = { 0, 1, 3 };
-
-				while (roomNumber[checkCanGo] == roomLocation)
-					checkCanGo = FMath::RandRange(0, 2);
-
-				switch (checkCanGo)
-				{
-					// UP
-				case 0:
-					returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X + ChunkDistance, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("down"));
-					CurrentChunk->SetDoor(FString("up"), true);
-					break;
-					// RIGHT
-				case 1:
-					returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y + ChunkDistance, CurrentChunk->GetActorLocation().Z), FString("left"));
-					CurrentChunk->SetDoor(FString("right"), true);
-					break;
-					// LEFT
-				case 2:
-					returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y - ChunkDistance, CurrentChunk->GetActorLocation().Z), FString("right"));
-					CurrentChunk->SetDoor(FString("left"), true);
-					break;
-				default:
-					break;
-				}
-			}
-			else
-				return nullptr;
-
+			doorList = { true, true, false, true };
+			doorList = SpawnRoom(CurrentChunk, doorList);
+			nextChunk = SpawnCorrider(CurrentChunk, doorList);
 		}
 		else									// 복도를 스폰
 		{
-			switch (FMath::RandRange(0, 2))
-			{
-				// UP
-			case 0:
-				returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X + ChunkDistance, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("down"));
-				CurrentChunk->SetDoor(FString("up"), true);
-				break;
-				// RIGHT
-			case 1:
-				returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y + ChunkDistance, CurrentChunk->GetActorLocation().Z), FString("left"));
-				CurrentChunk->SetDoor(FString("right"), true);
-				break;
-				// LEFT
-			case 2:
-				returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y - ChunkDistance, CurrentChunk->GetActorLocation().Z), FString("right"));
-				CurrentChunk->SetDoor(FString("left"), true);
-				break;
-			default:
-				break;
-			}
+			doorList = { true, true, false, true };
+			nextChunk = SpawnCorrider(CurrentChunk, doorList);
 		}
 	}
 
@@ -459,92 +217,17 @@ AChunk* AMapGeneratorActor::GeneratingChunk(AChunk* CurrentChunk)
 		if (FMath::RandRange(0, 1) == 0)		// 방을 스폰
 		{
 			/*
-			* 방을 스폰 시킨 뒤, 복도를 하나 더 만들지 말지를 결정.
+			* 방을 스폰 시킨 뒤, 복도를 하나 더 스폰.
 			* Door가 있는 부분도 함께 저장해준다.
 			*/
-			int8 roomLocation;
-
-			switch (FMath::RandRange(0, 2))
-			{
-				// UP
-			case 0:
-				SpawnRoom(FVector(CurrentChunk->GetActorLocation().X + ChunkDistance, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("down"));
-				roomLocation = 0;
-				CurrentChunk->SetDoor(FString("up"), true);
-				break;
-				// RIGHT
-			case 1:
-				SpawnRoom(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y + ChunkDistance, CurrentChunk->GetActorLocation().Z), FString("left"));
-				roomLocation = 1;
-				CurrentChunk->SetDoor(FString("right"), true);
-				break;
-				// DOWN
-			case 2:
-				SpawnRoom(FVector(CurrentChunk->GetActorLocation().X - ChunkDistance, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("up"));
-				roomLocation = 2;
-				CurrentChunk->SetDoor(FString("down"), true);
-				break;
-			default:
-				break;
-			}
-
-			// 복도 잇기 or 방 한개로 끝
-			// if 안의 조건 FMath::RandRange(0, 1) == 0
-			if (true)
-			{
-				int8 checkCanGo = FMath::RandRange(0, 2);
-				TArray<int8> roomNumber = { 0, 1, 2 };
-
-				while (roomNumber[checkCanGo] == roomLocation)
-					checkCanGo = FMath::RandRange(0, 2);
-
-				switch (checkCanGo)
-				{
-					// UP
-				case 0:
-					returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X + ChunkDistance, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("down"));
-					CurrentChunk->SetDoor(FString("up"), true);
-					break;
-					// RIGHT
-				case 1:
-					returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y + ChunkDistance, CurrentChunk->GetActorLocation().Z), FString("left"));
-					CurrentChunk->SetDoor(FString("right"), true);
-					break;
-					// DOWN
-				case 2:
-					returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X - ChunkDistance, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("up"));
-					CurrentChunk->SetDoor(FString("down"), true);
-					break;
-				default:
-					break;
-				}
-			}
-			else
-				return nullptr;
-
+			doorList = { true, true, true, false};
+			doorList = SpawnRoom(CurrentChunk, doorList);
+			nextChunk = SpawnCorrider(CurrentChunk, doorList);
 		}
 		else									// 복도를 스폰
 		{
-			switch (FMath::RandRange(0, 2))
-			{
-				// UP
-			case 0:
-				returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X + ChunkDistance, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("down"));
-				CurrentChunk->SetDoor(FString("up"), true);
-				break;
-				// RIGHT
-			case 1:
-				returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y + ChunkDistance, CurrentChunk->GetActorLocation().Z), FString("left"));
-				CurrentChunk->SetDoor(FString("right"), true);
-				break;
-				// DOWN
-			case 2:
-				returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X - ChunkDistance, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("up"));
-				CurrentChunk->SetDoor(FString("down"), true);
-				break;
-			default:
-				break;
-			}
+			doorList = { true, true, true, false };
+			nextChunk = SpawnCorrider(CurrentChunk, doorList);
 		}
 	}
 	
@@ -553,83 +236,24 @@ AChunk* AMapGeneratorActor::GeneratingChunk(AChunk* CurrentChunk)
 	*/
 	else if (upHitSuccess && rightHitSuccess && !downHitSuccess && !leftHitSuccess)
 	{
-		MakingDoor(CurrentChunk, upHitResult, rightHitResult, downHitResult, leftHitResult);
-
 		// 방을 스폰시킬지 결정
 		if (FMath::RandRange(0, 1) == 0)		// 방을 스폰
 		{
 			/*
-			* 방을 스폰 시킨 뒤, 복도를 하나 더 만들지 말지를 결정.
+			* 방을 스폰 시킨 뒤, 복도를 하나 더 스폰.
 			* Door가 있는 부분도 함께 저장해준다.
 			*/
-			int8 roomLocation;
-
-			switch (FMath::RandRange(0, 1))
-			{
-				// DOWN
-			case 0:
-				SpawnRoom(FVector(CurrentChunk->GetActorLocation().X - ChunkDistance, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("up"));
-				roomLocation = 2;
-				CurrentChunk->SetDoor(FString("down"), true);
-				break;
-				// LEFT
-			case 1:
-				SpawnRoom(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y - ChunkDistance, CurrentChunk->GetActorLocation().Z), FString("right"));
-				roomLocation = 3;
-				CurrentChunk->SetDoor(FString("left"), true);
-				break;
-			default:
-				break;
-			}
-
-			// 복도 잇기 or 방 한개로 끝
-			// if 안의 조건 FMath::RandRange(0, 1) == 0
-			if (true)
-			{
-				int8 checkCanGo = FMath::RandRange(0, 1);
-				TArray<int8> roomNumber = { 2, 3 };
-
-				while (roomNumber[checkCanGo] == roomLocation)
-					checkCanGo = FMath::RandRange(0, 1);
-
-				switch (checkCanGo)
-				{
-					// DOWN
-				case 0:
-					returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X - ChunkDistance, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("up"));
-					CurrentChunk->SetDoor(FString("down"), true);
-					break;
-					// LEFT
-				case 1:
-					returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y - ChunkDistance, CurrentChunk->GetActorLocation().Z), FString("right"));
-					CurrentChunk->SetDoor(FString("left"), true);
-					break;
-				default:
-					break;
-				}
-			}
-			else
-				return nullptr;
-
+			doorList = { false, false, true, true };
+			doorList = SpawnRoom(CurrentChunk, doorList);
+			nextChunk = SpawnCorrider(CurrentChunk, doorList);
 		}
 		else									// 복도를 스폰
 		{
-			switch (FMath::RandRange(0, 1))
-			{
-				// DOWN
-			case 0:
-				returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X - ChunkDistance, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("up"));
-				CurrentChunk->SetDoor(FString("down"), true);
-				break;
-				// LEFT
-			case 1:
-				returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y - ChunkDistance, CurrentChunk->GetActorLocation().Z), FString("right"));
-				CurrentChunk->SetDoor(FString("left"), true);
-				break;
-			default:
-				break;
-			}
+			doorList = { false, false, true, true };
+			nextChunk = SpawnCorrider(CurrentChunk, doorList);
 		}
+
+		MakingDoor(CurrentChunk, upHitResult, rightHitResult, downHitResult, leftHitResult);
 	}
 
 	/*
@@ -637,83 +261,24 @@ AChunk* AMapGeneratorActor::GeneratingChunk(AChunk* CurrentChunk)
 	*/
 	else if (!upHitSuccess && rightHitSuccess && downHitSuccess && !leftHitSuccess)
 	{
-		MakingDoor(CurrentChunk, upHitResult, rightHitResult, downHitResult, leftHitResult);
-
 		// 방을 스폰시킬지 결정
 		if (FMath::RandRange(0, 1) == 0)		// 방을 스폰
 		{
 			/*
-			* 방을 스폰 시킨 뒤, 복도를 하나 더 만들지 말지를 결정.
+			* 방을 스폰 시킨 뒤, 복도를 하나 더 스폰.
 			* Door가 있는 부분도 함께 저장해준다.
 			*/
-			int8 roomLocation;
-
-			switch (FMath::RandRange(0, 1))
-			{
-				// UP
-			case 0:
-				SpawnRoom(FVector(CurrentChunk->GetActorLocation().X + ChunkDistance, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("down"));
-				roomLocation = 0;
-				CurrentChunk->SetDoor(FString("up"), true);
-				break;
-				// LEFT
-			case 1:
-				SpawnRoom(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y - ChunkDistance, CurrentChunk->GetActorLocation().Z), FString("right"));
-				roomLocation = 3;
-				CurrentChunk->SetDoor(FString("left"), true);
-				break;
-			default:
-				break;
-			}
-
-			// 복도 잇기 or 방 한개로 끝
-			// if 안의 조건 FMath::RandRange(0, 1) == 0
-			if (true)
-			{
-				int8 checkCanGo = FMath::RandRange(0, 1);
-				TArray<int8> roomNumber = { 0, 3 };
-
-				while (roomNumber[checkCanGo] == roomLocation)
-					checkCanGo = FMath::RandRange(0, 1);
-
-				switch (checkCanGo)
-				{
-					// UP
-				case 0:
-					returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X + ChunkDistance, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("down"));
-					CurrentChunk->SetDoor(FString("up"), true);
-					break;
-					// LEFT
-				case 1:
-					returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y - ChunkDistance, CurrentChunk->GetActorLocation().Z), FString("right"));
-					CurrentChunk->SetDoor(FString("left"), true);
-					break;
-				default:
-					break;
-				}
-			}
-			else
-				return nullptr;
-
+			doorList = { true, false, false, true };
+			doorList = SpawnRoom(CurrentChunk, doorList);
+			nextChunk = SpawnCorrider(CurrentChunk, doorList);
 		}
 		else									// 복도를 스폰
 		{
-			switch (FMath::RandRange(0, 1))
-			{
-				// UP
-			case 0:
-				returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X + ChunkDistance, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("down"));
-				CurrentChunk->SetDoor(FString("up"), true);
-				break;
-				// LEFT
-			case 1:
-				returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y - ChunkDistance, CurrentChunk->GetActorLocation().Z), FString("right"));
-				CurrentChunk->SetDoor(FString("left"), true);
-				break;
-			default:
-				break;
-			}
+			doorList = { true, false, false, true };
+			nextChunk = SpawnCorrider(CurrentChunk, doorList);
 		}
+
+		MakingDoor(CurrentChunk, upHitResult, rightHitResult, downHitResult, leftHitResult);
 	}
 
 	/*
@@ -721,83 +286,24 @@ AChunk* AMapGeneratorActor::GeneratingChunk(AChunk* CurrentChunk)
 	*/
 	else if (!upHitSuccess && !rightHitSuccess && downHitSuccess && leftHitSuccess)
 	{
-		MakingDoor(CurrentChunk, upHitResult, rightHitResult, downHitResult, leftHitResult);
-
 		// 방을 스폰시킬지 결정
 		if (FMath::RandRange(0, 1) == 0)		// 방을 스폰
 		{
 			/*
-			* 방을 스폰 시킨 뒤, 복도를 하나 더 만들지 말지를 결정.
+			* 방을 스폰 시킨 뒤, 복도를 하나 더 스폰.
 			* Door가 있는 부분도 함께 저장해준다.
 			*/
-			int8 roomLocation;
-
-			switch (FMath::RandRange(0, 1))
-			{
-				// UP
-			case 0:
-				SpawnRoom(FVector(CurrentChunk->GetActorLocation().X + ChunkDistance, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("down"));
-				roomLocation = 0;
-				CurrentChunk->SetDoor(FString("up"), true);
-				break;
-				// RIGHT
-			case 1:
-				SpawnRoom(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y + ChunkDistance, CurrentChunk->GetActorLocation().Z), FString("left"));
-				roomLocation = 1;
-				CurrentChunk->SetDoor(FString("right"), true);
-				break;
-			default:
-				break;
-			}
-
-			// 복도 잇기 or 방 한개로 끝
-			// if 안의 조건 FMath::RandRange(0, 1) == 0
-			if (true)
-			{
-				int8 checkCanGo = FMath::RandRange(0, 1);
-				TArray<int8> roomNumber = { 0, 1 };
-
-				while (roomNumber[checkCanGo] == roomLocation)
-					checkCanGo = FMath::RandRange(0, 1);
-
-				switch (checkCanGo)
-				{
-					// UP
-				case 0:
-					returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X + ChunkDistance, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("down"));
-					CurrentChunk->SetDoor(FString("up"), true);
-					break;
-					// RIGHT
-				case 1:
-					returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y + ChunkDistance, CurrentChunk->GetActorLocation().Z), FString("left"));
-					CurrentChunk->SetDoor(FString("right"), true);
-					break;
-				default:
-					break;
-				}
-			}
-			else
-				return nullptr;
-
+			doorList = { true, true, false, false};
+			doorList = SpawnRoom(CurrentChunk, doorList);
+			nextChunk = SpawnCorrider(CurrentChunk, doorList);
 		}
 		else									// 복도를 스폰
 		{
-			switch (FMath::RandRange(0, 1))
-			{
-				// UP
-			case 0:
-				returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X + ChunkDistance, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("down"));
-				CurrentChunk->SetDoor(FString("up"), true);
-				break;
-				// RIGHT
-			case 1:
-				returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y + ChunkDistance, CurrentChunk->GetActorLocation().Z), FString("left"));
-				CurrentChunk->SetDoor(FString("right"), true);
-				break;
-			default:
-				break;
-			}
+			doorList = { true, true, false, false };
+			nextChunk = SpawnCorrider(CurrentChunk, doorList);
 		}
+
+		MakingDoor(CurrentChunk, upHitResult, rightHitResult, downHitResult, leftHitResult);
 	}
 
 	/*
@@ -805,84 +311,24 @@ AChunk* AMapGeneratorActor::GeneratingChunk(AChunk* CurrentChunk)
 	*/
 	else if (upHitSuccess && !rightHitSuccess && !downHitSuccess && leftHitSuccess)
 	{
-		MakingDoor(CurrentChunk, upHitResult, rightHitResult, downHitResult, leftHitResult);
-
 		// 방을 스폰시킬지 결정
 		if (FMath::RandRange(0, 1) == 0)		// 방을 스폰
 		{
 			/*
-			* 방을 스폰 시킨 뒤, 복도를 하나 더 만들지 말지를 결정.
+			* 방을 스폰 시킨 뒤, 복도를 하나 더 스폰.
 			* Door가 있는 부분도 함께 저장해준다.
 			*/
-			int8 roomLocation;
-
-			switch (FMath::RandRange(0, 1))
-			{
-				break;
-				// RIGHT
-			case 0:
-				SpawnRoom(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y + ChunkDistance, CurrentChunk->GetActorLocation().Z), FString("left"));
-				roomLocation = 1;
-				CurrentChunk->SetDoor(FString("right"), true);
-				break;
-				// DOWN
-			case 1:
-				SpawnRoom(FVector(CurrentChunk->GetActorLocation().X - ChunkDistance, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("up"));
-				roomLocation = 2;
-				CurrentChunk->SetDoor(FString("down"), true);
-				break;
-			default:
-				break;
-			}
-
-			// 복도 잇기 or 방 한개로 끝
-			// if 안의 조건 FMath::RandRange(0, 1) == 0
-			if (true)
-			{
-				int8 checkCanGo = FMath::RandRange(0, 1);
-				TArray<int8> roomNumber = { 1, 2 };
-
-				while (roomNumber[checkCanGo] == roomLocation)
-					checkCanGo = FMath::RandRange(0, 1);
-
-				switch (checkCanGo)
-				{
-					// RIGHT
-				case 0:
-					returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y + ChunkDistance, CurrentChunk->GetActorLocation().Z), FString("left"));
-					CurrentChunk->SetDoor(FString("right"), true);
-					break;
-					// DOWN
-				case 1:
-					returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X - ChunkDistance, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("up"));
-					CurrentChunk->SetDoor(FString("down"), true);
-					break;
-				default:
-					break;
-				}
-			}
-			else
-				return nullptr;
-
+			doorList = { false, true, true, false };
+			doorList = SpawnRoom(CurrentChunk, doorList);
+			nextChunk = SpawnCorrider(CurrentChunk, doorList);
 		}
 		else									// 복도를 스폰
 		{
-			switch (FMath::RandRange(0, 1))
-			{
-				// RIGHT
-			case 0:
-				returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y + ChunkDistance, CurrentChunk->GetActorLocation().Z), FString("left"));
-				CurrentChunk->SetDoor(FString("right"), true);
-				break;
-				// DOWN
-			case 1:
-				returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X - ChunkDistance, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("up"));
-				CurrentChunk->SetDoor(FString("down"), true);
-				break;
-			default:
-				break;
-			}
+			doorList = { false, true, true, false };
+			nextChunk = SpawnCorrider(CurrentChunk, doorList);
 		}
+
+		MakingDoor(CurrentChunk, upHitResult, rightHitResult, downHitResult, leftHitResult);
 	}
 
 	/*
@@ -890,83 +336,24 @@ AChunk* AMapGeneratorActor::GeneratingChunk(AChunk* CurrentChunk)
 	*/
 	else if (upHitSuccess && !rightHitSuccess && downHitSuccess && !leftHitSuccess)
 	{
-		MakingDoor(CurrentChunk, upHitResult, rightHitResult, downHitResult, leftHitResult);
-
 		// 방을 스폰시킬지 결정
 		if (FMath::RandRange(0, 1) == 0)		// 방을 스폰
 		{
 			/*
-			* 방을 스폰 시킨 뒤, 복도를 하나 더 만들지 말지를 결정.
+			* 방을 스폰 시킨 뒤, 복도를 하나 더 스폰.
 			* Door가 있는 부분도 함께 저장해준다.
 			*/
-			int8 roomLocation;
-
-			switch (FMath::RandRange(0, 1))
-			{
-				// RIGHT
-			case 0:
-				SpawnRoom(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y + ChunkDistance, CurrentChunk->GetActorLocation().Z), FString("left"));
-				roomLocation = 1;
-				CurrentChunk->SetDoor(FString("right"), true);
-				break;
-				// LEFT
-			case 1:
-				SpawnRoom(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y - ChunkDistance, CurrentChunk->GetActorLocation().Z), FString("right"));
-				roomLocation = 3;
-				CurrentChunk->SetDoor(FString("left"), true);
-				break;
-			default:
-				break;
-			}
-
-			// 복도 잇기 or 방 한개로 끝
-			// if 안의 조건 FMath::RandRange(0, 1) == 0
-			if (true)
-			{
-				int8 checkCanGo = FMath::RandRange(0, 1);
-				TArray<int8> roomNumber = { 1, 3 };
-
-				while (roomNumber[checkCanGo] == roomLocation)
-					checkCanGo = FMath::RandRange(0, 1);
-
-				switch (checkCanGo)
-				{
-					// RIGHT
-				case 0:
-					returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y + ChunkDistance, CurrentChunk->GetActorLocation().Z), FString("left"));
-					CurrentChunk->SetDoor(FString("right"), true);
-					break;
-					// LEFT
-				case 1:
-					returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y - ChunkDistance, CurrentChunk->GetActorLocation().Z), FString("right"));
-					CurrentChunk->SetDoor(FString("left"), true);
-					break;
-				default:
-					break;
-				}
-			}
-			else
-				return nullptr;
-
+			doorList = { false, true, false, true };
+			doorList = SpawnRoom(CurrentChunk, doorList);
+			nextChunk = SpawnCorrider(CurrentChunk, doorList);
 		}
 		else									// 복도를 스폰
 		{
-			switch (FMath::RandRange(0, 1))
-			{
-				// RIGHT
-			case 0:
-				returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y + ChunkDistance, CurrentChunk->GetActorLocation().Z), FString("left"));
-				CurrentChunk->SetDoor(FString("right"), true);
-				break;
-				// LEFT
-			case 1:
-				returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y - ChunkDistance, CurrentChunk->GetActorLocation().Z), FString("right"));
-				CurrentChunk->SetDoor(FString("left"), true);
-				break;
-			default:
-				break;
-			}
+			doorList = { false, true, false, true };
+			nextChunk = SpawnCorrider(CurrentChunk, doorList);
 		}
+
+		MakingDoor(CurrentChunk, upHitResult, rightHitResult, downHitResult, leftHitResult);
 	}
 
 	/*
@@ -974,83 +361,24 @@ AChunk* AMapGeneratorActor::GeneratingChunk(AChunk* CurrentChunk)
 	*/
 	else if (upHitSuccess && !rightHitSuccess && !downHitSuccess && leftHitSuccess)
 	{
-		MakingDoor(CurrentChunk, upHitResult, rightHitResult, downHitResult, leftHitResult);
-
 		// 방을 스폰시킬지 결정
 		if (FMath::RandRange(0, 1) == 0)		// 방을 스폰
 		{
 			/*
-			* 방을 스폰 시킨 뒤, 복도를 하나 더 만들지 말지를 결정.
+			* 방을 스폰 시킨 뒤, 복도를 하나 더 스폰.
 			* Door가 있는 부분도 함께 저장해준다.
 			*/
-			int8 roomLocation;
-
-			switch (FMath::RandRange(0, 1))
-			{
-				// UP
-			case 0:
-				SpawnRoom(FVector(CurrentChunk->GetActorLocation().X + ChunkDistance, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("down"));
-				roomLocation = 0;
-				CurrentChunk->SetDoor(FString("up"), true);
-				break;
-				// DOWN
-			case 1:
-				SpawnRoom(FVector(CurrentChunk->GetActorLocation().X - ChunkDistance, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("up"));
-				roomLocation = 2;
-				CurrentChunk->SetDoor(FString("down"), true);
-				break;
-			default:
-				break;
-			}
-
-			// 복도 잇기 or 방 한개로 끝
-			// if 안의 조건 FMath::RandRange(0, 1) == 0
-			if (true)
-			{
-				int8 checkCanGo = FMath::RandRange(0, 1);
-				TArray<int8> roomNumber = { 0, 2 };
-
-				while (roomNumber[checkCanGo] == roomLocation)
-					checkCanGo = FMath::RandRange(0, 1);
-
-				switch (checkCanGo)
-				{
-					// UP
-				case 0:
-					returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X + ChunkDistance, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("down"));
-					CurrentChunk->SetDoor(FString("up"), true);
-					break;
-					// DOWN
-				case 1:
-					returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X - ChunkDistance, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("up"));
-					CurrentChunk->SetDoor(FString("down"), true);
-					break;
-				default:
-					break;
-				}
-			}
-			else
-				return nullptr;
-
+			doorList = {true,  false, true, false };
+			doorList = SpawnRoom(CurrentChunk, doorList);
+			nextChunk = SpawnCorrider(CurrentChunk, doorList);
 		}
 		else									// 복도를 스폰
 		{
-			switch (FMath::RandRange(0, 1))
-			{
-				// UP
-			case 0:
-				returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X + ChunkDistance, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("down"));
-				CurrentChunk->SetDoor(FString("up"), true);
-				break;
-				// DOWN
-			case 1:
-				returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X - ChunkDistance, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("up"));
-				CurrentChunk->SetDoor(FString("down"), true);
-				break;
-			default:
-				break;
-			}
+			doorList = { true,  false, true, false };
+			nextChunk = SpawnCorrider(CurrentChunk, doorList);
 		}
+
+		MakingDoor(CurrentChunk, upHitResult, rightHitResult, downHitResult, leftHitResult);
 	}
 
 	/*
@@ -1058,26 +386,24 @@ AChunk* AMapGeneratorActor::GeneratingChunk(AChunk* CurrentChunk)
 	*/
 	else if (upHitSuccess && rightHitSuccess && downHitSuccess && !leftHitSuccess)
 	{
-		MakingDoor(CurrentChunk, upHitResult, rightHitResult, downHitResult, leftHitResult);
-
 		// 방을 스폰시킬지 결정
 		if (FMath::RandRange(0, 1) == 0)		// 방을 스폰
 		{
 			/*
-			* 방을 스폰 시킨 뒤, 복도를 하나 더 만들지 말지를 결정.
+			* 방을 스폰 시킨 뒤, 복도를 하나 더 스폰.
 			* Door가 있는 부분도 함께 저장해준다.
 			*/
-
-			// LEFT
-			SpawnRoom(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y - ChunkDistance, CurrentChunk->GetActorLocation().Z), FString("right"));
-			CurrentChunk->SetDoor(FString("left"), true);
+			doorList = { false, false, false, true };
+			doorList = SpawnRoom(CurrentChunk, doorList);
+			nextChunk = SpawnCorrider(CurrentChunk, doorList);
 		}
 		else									// 복도를 스폰
 		{
-			// LEFT
-			returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y - ChunkDistance, CurrentChunk->GetActorLocation().Z), FString("right"));
-			CurrentChunk->SetDoor(FString("left"), true);
+			doorList = { false, false, false, true };
+			nextChunk = SpawnCorrider(CurrentChunk, doorList);
 		}
+
+		MakingDoor(CurrentChunk, upHitResult, rightHitResult, downHitResult, leftHitResult);
 	}
 
 	/*
@@ -1085,26 +411,24 @@ AChunk* AMapGeneratorActor::GeneratingChunk(AChunk* CurrentChunk)
 	*/
 	else if (!upHitSuccess && rightHitSuccess && downHitSuccess && leftHitSuccess)
 	{
-		MakingDoor(CurrentChunk, upHitResult, rightHitResult, downHitResult, leftHitResult);
-
 		// 방을 스폰시킬지 결정
 		if (FMath::RandRange(0, 1) == 0)		// 방을 스폰
 		{
 			/*
-			* 방을 스폰 시킨 뒤, 복도를 하나 더 만들지 말지를 결정.
+			* 방을 스폰 시킨 뒤, 복도를 하나 더 스폰.
 			* Door가 있는 부분도 함께 저장해준다.
 			*/
-
-			// UP
-			SpawnRoom(FVector(CurrentChunk->GetActorLocation().X + ChunkDistance, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("down"));
-			CurrentChunk->SetDoor(FString("up"), true);
+			doorList = { true,  false, false, false };
+			doorList = SpawnRoom(CurrentChunk, doorList);
+			nextChunk = SpawnCorrider(CurrentChunk, doorList);
 		}
 		else									// 복도를 스폰
 		{
-			// UP
-			returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X + ChunkDistance, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("down"));
-			CurrentChunk->SetDoor(FString("up"), true);
+			doorList = { true,  false, false, false };
+			SpawnCorrider(CurrentChunk, doorList);
 		}
+
+		MakingDoor(CurrentChunk, upHitResult, rightHitResult, downHitResult, leftHitResult);
 	}
 
 	/*
@@ -1112,26 +436,24 @@ AChunk* AMapGeneratorActor::GeneratingChunk(AChunk* CurrentChunk)
 	*/
 	else if (!upHitSuccess && rightHitSuccess && downHitSuccess && leftHitSuccess)
 	{
-		MakingDoor(CurrentChunk, upHitResult, rightHitResult, downHitResult, leftHitResult);
-
 		// 방을 스폰시킬지 결정
 		if (FMath::RandRange(0, 1) == 0)		// 방을 스폰
 		{
 			/*
-			* 방을 스폰 시킨 뒤, 복도를 하나 더 만들지 말지를 결정.
+			* 방을 스폰 시킨 뒤, 복도를 하나 더 스폰.
 			* Door가 있는 부분도 함께 저장해준다.
 			*/
-	
-			// RIGHT
-			SpawnRoom(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y + ChunkDistance, CurrentChunk->GetActorLocation().Z), FString("left"));
-			CurrentChunk->SetDoor(FString("right"), true);
+			doorList = { false, true, false, false };
+			doorList = SpawnRoom(CurrentChunk, doorList);
+			nextChunk = SpawnCorrider(CurrentChunk, doorList);
 		}
 		else									// 복도를 스폰
 		{
-			// RIGHT
-			returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y + ChunkDistance, CurrentChunk->GetActorLocation().Z), FString("left"));
-			CurrentChunk->SetDoor(FString("right"), true);
+			doorList = { false, true, false, false };
+			nextChunk = SpawnCorrider(CurrentChunk, doorList);
 		}
+
+		MakingDoor(CurrentChunk, upHitResult, rightHitResult, downHitResult, leftHitResult);
 	}
 
 	/*
@@ -1139,26 +461,24 @@ AChunk* AMapGeneratorActor::GeneratingChunk(AChunk* CurrentChunk)
 	*/
 	else if (upHitSuccess && rightHitSuccess && !downHitSuccess && leftHitSuccess)
 	{
-		MakingDoor(CurrentChunk, upHitResult, rightHitResult, downHitResult, leftHitResult);
-
 		// 방을 스폰시킬지 결정
 		if (FMath::RandRange(0, 1) == 0)		// 방을 스폰
 		{
 			/*
-			* 방을 스폰 시킨 뒤, 복도를 하나 더 만들지 말지를 결정.
+			* 방을 스폰 시킨 뒤, 복도를 하나 더 스폰.
 			* Door가 있는 부분도 함께 저장해준다.
 			*/
-
-			// DOWN
-			SpawnRoom(FVector(CurrentChunk->GetActorLocation().X - ChunkDistance, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("up"));
-			CurrentChunk->SetDoor(FString("down"), true);
+			doorList = { false,  false, true, false };
+			doorList = SpawnRoom(CurrentChunk, doorList);
+			nextChunk = SpawnCorrider(CurrentChunk, doorList);
 		}
 		else									// 복도를 스폰
 		{
-			// DOWN
-			returnActor = SpawnCorrider(FVector(CurrentChunk->GetActorLocation().X - ChunkDistance, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("up"));
-			CurrentChunk->SetDoor(FString("down"), true);
+			doorList = { false,  false, true, false };
+			nextChunk = SpawnCorrider(CurrentChunk, doorList);
 		}
+
+		MakingDoor(CurrentChunk, upHitResult, rightHitResult, downHitResult, leftHitResult);
 	}
 
 	/*
@@ -1169,7 +489,7 @@ AChunk* AMapGeneratorActor::GeneratingChunk(AChunk* CurrentChunk)
 		return nullptr;
 	}
 
-	return returnActor;
+	return nextChunk;
 }
 
 void AMapGeneratorActor::MakingDoor(AChunk* currentChunk, FHitResult upHitResult, FHitResult rightHitResult, FHitResult downHitResult, FHitResult leftHitResult)
@@ -1206,4 +526,111 @@ void AMapGeneratorActor::MakingDoor(AChunk* currentChunk, FHitResult upHitResult
 			currentChunk->SetDoor(FString("left"), true);
 		}
 	}
+}
+
+TArray<bool> AMapGeneratorActor::SpawnRoom(AChunk* CurrentChunk, TArray<bool> DoorList)
+{
+	int8 RandomNum = -1;
+	bool UpDoor = DoorList[0];
+	bool RightDoor = DoorList[1];
+	bool DownDoor = DoorList[2];
+	bool LeftDoor = DoorList[3];
+
+	while (((RandomNum == 0 && !UpDoor) || (RandomNum == 1 && !RightDoor) || (RandomNum == 2 && !DownDoor) || (RandomNum == 3 && !LeftDoor)) || RandomNum == -1)
+		RandomNum = FMath::RandRange(0, 3);
+
+	switch (RandomNum)
+	{
+		// UP
+	case 0:
+		SpawnRoomActor(FVector(CurrentChunk->GetActorLocation().X + ChunkDistance, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("down"));
+		CurrentChunk->SetDoor(FString("up"), true);
+		UpDoor = !UpDoor;
+		break;
+		// RIGHT
+	case 1:
+		SpawnRoomActor(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y + ChunkDistance, CurrentChunk->GetActorLocation().Z), FString("left"));
+		CurrentChunk->SetDoor(FString("right"), true);
+		RightDoor = !RightDoor;
+		break;
+		// DOWN
+	case 2:
+		SpawnRoomActor(FVector(CurrentChunk->GetActorLocation().X - ChunkDistance, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("up"));
+		CurrentChunk->SetDoor(FString("down"), true);
+		DownDoor = !DownDoor;
+		break;
+		// LEFT
+	case 3:
+		SpawnRoomActor(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y - ChunkDistance, CurrentChunk->GetActorLocation().Z), FString("right"));
+		CurrentChunk->SetDoor(FString("left"), true);
+		LeftDoor = !LeftDoor;
+		break;
+	default:
+		break;
+	}
+
+	return { UpDoor, RightDoor, DownDoor, LeftDoor };
+}
+
+AChunk* AMapGeneratorActor::SpawnCorrider(AChunk* CurrentChunk, TArray<bool> DoorList)
+{
+	int8 RandomNum = -1;
+	AChunk* returnCorrider = CurrentChunk;
+	bool UpDoor = DoorList[0];
+	bool RightDoor = DoorList[1];
+	bool DownDoor = DoorList[2];
+	bool LeftDoor = DoorList[3];
+
+	while (((RandomNum == 0 && !UpDoor) || (RandomNum == 1 && !RightDoor) || (RandomNum == 2 && !DownDoor) || (RandomNum == 3 && !LeftDoor)) || RandomNum == -1)
+		RandomNum = FMath::RandRange(0, 3);
+
+	UE_LOG(LogTemp, Warning, TEXT("%d"), RandomNum);
+	switch (RandomNum)
+	{
+		// UP
+	case 0:
+		returnCorrider = SpawnCorriderActor(FVector(CurrentChunk->GetActorLocation().X + ChunkDistance, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("down"));
+		CurrentChunk->SetDoor(FString("up"), true);
+		UpDoor = !UpDoor;
+		break;
+		// RIGHT
+	case 1:
+		returnCorrider = SpawnCorriderActor(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y + ChunkDistance, CurrentChunk->GetActorLocation().Z), FString("left"));
+		CurrentChunk->SetDoor(FString("right"), true);
+		RightDoor = !RightDoor;
+		break;
+		// DOWN
+	case 2:
+		returnCorrider = SpawnCorriderActor(FVector(CurrentChunk->GetActorLocation().X - ChunkDistance, CurrentChunk->GetActorLocation().Y, CurrentChunk->GetActorLocation().Z), FString("up"));
+		CurrentChunk->SetDoor(FString("down"), true);
+		DownDoor = !DownDoor;
+		break;
+		// LEFT
+	case 3:
+		returnCorrider = SpawnCorriderActor(FVector(CurrentChunk->GetActorLocation().X, CurrentChunk->GetActorLocation().Y - ChunkDistance, CurrentChunk->GetActorLocation().Z), FString("right"));
+		CurrentChunk->SetDoor(FString("left"), true);
+		LeftDoor = !LeftDoor;
+		break;
+	default:
+		returnCorrider = nullptr;
+		break;
+	}
+
+	return returnCorrider;
+}
+
+void AMapGeneratorActor::SpawnRoomActor(FVector location, FString doorLocation)
+{
+	FActorSpawnParameters tParams;
+	ARoom* Room = GetWorld()->SpawnActor<ARoom>(ARoom::StaticClass(), location, FRotator::ZeroRotator, tParams);
+	Room->SetDoor(doorLocation, true);
+}
+
+AChunk* AMapGeneratorActor::SpawnCorriderActor(FVector location, FString doorLocation)
+{
+	FActorSpawnParameters tParams;
+	ACorrider* Corrider = GetWorld()->SpawnActor<ACorrider>(ACorrider::StaticClass(), location, FRotator::ZeroRotator, tParams);
+	Corrider->SetDoor(doorLocation, true);
+
+	return Corrider;
 }

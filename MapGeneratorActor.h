@@ -32,9 +32,13 @@ public:
 	void GeneratingMap();
 	void MakingDoor(AChunk* currentChunk, FHitResult upHitResult, FHitResult rightHitResult, FHitResult downHitResult, FHitResult leftHitResult);
 
-	AChunk* GeneratingChunk(AChunk* CurrentChunk);
-	AChunk* SpawnRoom(FVector location, FString doorLocation);
-	AChunk* SpawnCorrider(FVector location, FString doorLocation);
+	AChunk* GeneratingChunk(AChunk* CurrentChunk, int count);
+
+	TArray<bool> SpawnRoom(AChunk* CurrentChunk, TArray<bool> DoorList);
+	AChunk* SpawnCorrider(AChunk* CurrentChunk, TArray<bool> DoorList);
+
+	void SpawnRoomActor(FVector location, FString doorLocation);
+	AChunk* SpawnCorriderActor(FVector location, FString doorLocation);
 	
 
 private:
