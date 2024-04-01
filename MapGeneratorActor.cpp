@@ -16,7 +16,7 @@ AMapGeneratorActor::AMapGeneratorActor()
 	MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComponent"));
 	RootComponent = MeshComponent;
 
-	mapScale = 3;
+	mapScale = 10;
 	ChunkDistance = 2000;
 }
 
@@ -55,7 +55,7 @@ void AMapGeneratorActor::GeneratingMap()
 	AChunk* root_3 = leftCorrider;
 
 	//root 1
-	for (int i = 0; i < 10; i++)
+	for (int i = 0; i < mapScale; i++)
 	{
 		root_1 = GeneratingChunk(root_1);
 
@@ -64,7 +64,7 @@ void AMapGeneratorActor::GeneratingMap()
 	}
 
 	//root 2
-	for (int i = 0; i < 10; i++)
+	for (int i = 0; i < mapScale; i++)
 	{
 		root_2 = GeneratingChunk(root_2);
 
@@ -73,7 +73,7 @@ void AMapGeneratorActor::GeneratingMap()
 	}
 
 	//root 3
-	for (int i = 0; i < 10; i++)
+	for (int i = 0; i < mapScale; i++)
 	{
 		root_3 = GeneratingChunk(root_3);
 
